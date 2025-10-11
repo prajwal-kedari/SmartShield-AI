@@ -18,3 +18,7 @@ def work_step(FilePath):
         return 
     vt_check_hash(hashValue)
     check_hash_malwarebazaar(hashValue)
+
+if __name__ == "__main__" :
+    FilePath = input("Enter File Path :")
+    work_step(FilePath)
