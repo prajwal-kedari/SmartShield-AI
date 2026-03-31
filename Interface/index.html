@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureGuard Pro - Advanced Threat Detection System</title>
+    <meta name="description" content="Professional cybersecurity threat detection with ML-powered scanning, real-time protection, and multi-engine malware analysis.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'hsl(220, 25%, 10%)',
+                        foreground: 'hsl(210, 40%, 98%)',
+                        card: 'hsl(220, 20%, 15%)',
+                        primary: 'hsl(190, 95%, 50%)',
+                        secondary: 'hsl(220, 15%, 20%)',
+                        muted: 'hsl(220, 15%, 25%)',
+                        success: 'hsl(150, 80%, 45%)',
+                        border: 'hsl(220, 15%, 25%)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: hsl(220, 25%, 10%);
+            color: hsl(210, 40%, 98%);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .glow-button {
+            box-shadow: 0 0 20px hsl(190, 95%, 50%, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .glow-button:hover {
+            box-shadow: 0 0 30px hsl(190, 95%, 50%, 0.5);
+        }
+        
+        .border-dashed-custom {
+            border: 2px dashed hsl(220, 15%, 25%);
+        }
+        
+        .border-dashed-custom:hover {
+            border-color: hsl(190, 95%, 50%, 0.5);
+        }
+        
+        .border-dashed-custom.dragging {
+            border-color: hsl(190, 95%, 50%);
+            background-color: hsl(190, 95%, 50%, 0.05);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: hsl(220, 15%, 25%);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, hsl(190, 95%, 50%), hsl(200, 90%, 55%));
+            transition: width 0.3s ease;
+        }
+        
+        .switch {
+            width: 44px;
+            height: 24px;
+            background-color: hsl(220, 15%, 25%);
+            border-radius: 999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .switch.active {
+            background-color: hsl(190, 95%, 50%);
+        }
+        
+        .switch-thumb {
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        
+        .switch.active .switch-thumb {
+            transform: translateX(20px);
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid hsl(220, 15%, 25%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .checkbox.checked {
+            background-color: hsl(190, 95%, 50%);
+            border-color: hsl(190, 95%, 50%);
+        }
+        
+        .radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid hsl(220, 15%, 25%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .radio.checked {
+            border-color: hsl(190, 95%, 50%);
+        }
+        
+        .radio-dot {
+            width: 10px;
+            height: 10px;
+            background-color: hsl(190, 95%, 50%);
+            border-radius: 50%;
+            display: none;
+        }
+        
+        .radio.checked .radio-dot {
+            display: block;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header and Protection Toggle -->
+        <div class="flex flex-col lg:flex-row gap-6 mb-6">
+            <!-- Header -->
+            <div class="flex-1 flex items-center gap-4">
+                <div class="bg-[hsl(190,95%,50%)] p-3 rounded-xl">
+                    <svg class="w-8 h-8 text-[hsl(220,25%,10%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold">SecureGuard Pro</h1>
+                    <p class="text-[hsl(215,15%,60%)]">Advanced Threat Detection System</p>
+                </div>
+            </div>
+            
+            <!-- Protection Toggle -->
+            <div class="lg:w-96">
+                <div class="p-4 border-2 border-[hsl(190,95%,50%,0.2)] bg-[hsl(220,20%,15%,0.5)] backdrop-blur rounded-xl">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-[hsl(150,80%,45%,0.1)]">
+                                <svg class="w-5 h-5 text-[hsl(150,80%,45%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Real-Time Protection</h3>
+                                <p class="text-sm text-[hsl(215,15%,60%)]" id="protectionStatus">Active - Monitoring system</p>
+                            </div>
+                        </div>
+                        <div class="switch active" id="protectionSwitch" onclick="toggleProtection()">
+                            <div class="switch-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="grid lg:grid-cols-2 gap-6">
+            <!-- File Upload Zone -->
+            <div>
+                <div class="border-dashed-custom rounded-xl p-16 text-center transition-all" id="dropZone">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="p-4 rounded-full bg-[hsl(220,15%,25%)]">
+                            <svg class="w-8 h-8 text-[hsl(215,15%,60%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-lg mb-1">Drop files here or click to browse</p>
+                            <p class="text-sm text-[hsl(215,15%,60%)]">Supports all file types</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Online Scanning and ML Detection -->
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <!-- Online Scanning -->
+                    <div class="p-5 bg-[hsl(220,20%,15%)] border border-[hsl(220,15%,25%)] rounded-xl">
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg class="w-5 h-5 text-[hsl(190,95%,50%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                            </svg>
+                            <h3 class="font-semibold">Online Scanning</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="checkbox checked" onclick="toggleCheckbox(this)">
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <label class="text-sm cursor-pointer">VirusTotal</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="checkbox checked" onclick="toggleCheckbox(this)">
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <label class="text-sm cursor-pointer">Malware DB</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ML Detection -->
+                    <div class="p-5 bg-[hsl(220,20%,15%)] border border-[hsl(220,15%,25%)] rounded-xl">
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg class="w-5 h-5 text-[hsl(190,95%,50%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                            <h3 class="font-semibold">ML Detection</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="radio checked" onclick="selectRadio('ml')">
+                                        <div class="radio-dot"></div>
+                                    </div>
+                                    <label class="text-sm cursor-pointer">ML Detection</label>
+                                </div>
+                                <span class="px-2 py-1 text-xs bg-[hsl(150,80%,45%,0.2)] text-[hsl(150,80%,45%)] border border-[hsl(150,80%,45%,0.3)] rounded">Recommended</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="radio" onclick="selectRadio('custom')">
+                                    <div class="radio-dot"></div>
+                                </div>
+                                <label class="text-sm cursor-pointer">Custom</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="radio" onclick="selectRadio('ember')">
+                                    <div class="radio-dot"></div>
+                                </div>
+                                <label class="text-sm cursor-pointer">Ember</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scan Status -->
+                <div class="p-6 bg-[hsl(220,20%,15%)] border border-[hsl(220,15%,25%)] rounded-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                            <h3 class="font-semibold" id="scanStatusText">Ready to Scan</h3>
+                        </div>
+                        <span class="text-2xl font-bold text-[hsl(190,95%,50%)]" id="progressText">0%</span>
+                    </div>
+                    <div class="progress-bar mb-4">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <button onclick="startScan()" id="scanButton" class="w-full bg-[hsl(190,95%,50%)] hover:bg-[hsl(190,95%,45%)] text-[hsl(220,25%,10%)] font-semibold py-3 px-4 rounded-lg glow-button flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"></path>
+                        </svg>
+                        Start Scan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isProtectionActive = true;
+        let isScanning = false;
+        let scanProgress = 0;
+        
+        function toggleProtection() {
+            pywebview.api.button_clicked();
+            const switchEl = document.getElementById('protectionSwitch');
+            const statusEl = document.getElementById('protectionStatus');
+            
+            isProtectionActive = !isProtectionActive;
+            
+            if (isProtectionActive) {
+                switchEl.classList.add('active');
+                statusEl.textContent = 'Active - Monitoring system';
+            } else {
+                switchEl.classList.remove('active');
+                statusEl.textContent = 'Inactive';
+            }
+        }
+        
+        function toggleCheckbox(element) {
+            element.classList.toggle('checked');
+        }
+        
+        function selectRadio(name) {
+            document.querySelectorAll('.radio').forEach(radio => {
+                radio.classList.remove('checked');
+            });
+            event.target.closest('.flex').querySelector('.radio').classList.add('checked');
+        }
+        
+        function startScan() {
+            if (isScanning) return;
+            if (window.pywebview) {
+                pywebview.api.button_clicked();
+            }
+            isScanning = true;
+            scanProgress = 0;
+            
+            const button = document.getElementById('scanButton');
+            const statusText = document.getElementById('scanStatusText');
+            const progressText = document.getElementById('progressText');
+            const progressFill = document.getElementById('progressFill');
+            
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            button.style.cursor = 'not-allowed';
+            statusText.textContent = 'Scanning...';
+            
+            const interval = setInterval(() => {
+                scanProgress += 5;
+                progressText.textContent = scanProgress + '%';
+                progressFill.style.width = scanProgress + '%';
+                
+                if (scanProgress >= 100) {
+                    clearInterval(interval);
+                    isScanning = false;
+                    button.disabled = false;
+                    button.style.opacity = '1';
+                    button.style.cursor = 'pointer';
+                    statusText.textContent = 'Scan Complete';
+                    
+                    setTimeout(() => {
+                        statusText.textContent = 'Ready to Scan';
+                        scanProgress = 0;
+                        progressText.textContent = '0%';
+                        progressFill.style.width = '0%';
+                    }, 3000);
+                }
+            }, 200);
+        }
+        
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragging');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragging');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+            console.log('Files dropped:', e.dataTransfer.files);
+        });
+        
+        dropZone.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.onchange = (e) => {
+                console.log('Files selected:', e.target.files);
+            };
+            input.click();
+        });
+    </script>
+</body>
+</html>
