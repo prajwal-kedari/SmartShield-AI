@@ -1,0 +1,173 @@
+[
+  {
+    "event_id": 11,
+    "event_name": "FileCreate",
+    "timestamp": "2026-03-18T19:33:23.7963215Z",
+    "pid": 13552,
+    "data": {
+      "RuleName": "-",
+      "UtcTime": "2026-03-18 19:33:23.794",
+      "ProcessGuid": "{36d07de9-98bf-69ba-f500-00000000dd02}",
+      "ProcessId": "13552",
+      "Image": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\145.0.3800.97\\msedgewebview2.exe",
+      "TargetFilename": "C:\\Users\\Prajwal\\AppData\\Local\\Packages\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\LocalState\\EBWebView\\Default\\Cache\\Cache_Data\\f_0002d3",
+      "CreationUtcTime": "2026-03-18 19:33:23.794",
+      "User": "PRAJWAL-PC\\Prajwal"
+    }
+  },
+  {
+    "event_id": 11,
+    "event_name": "FileCreate",
+    "timestamp": "2026-03-18T19:33:25.6797927Z",
+    "pid": 10628,
+    "data": {
+      "RuleName": "-",
+      "UtcTime": "2026-03-18 19:33:25.678",
+      "ProcessGuid": "{36d07de9-98bf-69ba-f300-00000000dd02}",
+      "ProcessId": "10628",
+      "Image": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\145.0.3800.97\\msedgewebview2.exe",
+      "TargetFilename": "C:\\Users\\Prajwal\\AppData\\Local\\Packages\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\LocalState\\EBWebView\\Default\\Service Worker\\CacheStorage\\3b278e44f1419f0b07a0417a936be8182ad635d4\\c7bc8d7b-5b4b-4c66-9241-1595a01b2e90\\index-dir\\temp-index",
+      "CreationUtcTime": "2026-03-18 19:33:25.678",
+      "User": "PRAJWAL-PC\\Prajwal"
+    }
+  },
+  {
+    "event_id": 11,
+    "event_name": "FileCreate",
+    "timestamp": "2026-03-18T19:33:25.6810849Z",
+    "pid": 10628,
+    "data": {
+      "RuleName": "-",
+      "UtcTime": "2026-03-18 19:33:25.678",
+      "ProcessGuid": "{36d07de9-98bf-69ba-f300-00000000dd02}",
+      "ProcessId": "10628",
+      "Image": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\145.0.3800.97\\msedgewebview2.exe",
+      "TargetFilename": "C:\\Users\\Prajwal\\AppData\\Local\\Packages\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\LocalState\\EBWebView\\Default\\Service Worker\\CacheStorage\\3b278e44f1419f0b07a0417a936be8182ad635d4\\c7bc8d7b-5b4b-4c66-9241-1595a01b2e90\\index-dir\\the-real-index~RF18c15f3.TMP",
+      "CreationUtcTime": "2026-03-18 19:33:25.678",
+      "User": "PRAJWAL-PC\\Prajwal"
+    }
+  },
+  {
+    "event_id": 11,
+    "event_name": "FileCreate",
+    "timestamp": "2026-03-18T19:33:25.7280328Z",
+    "pid": 10628,
+    "data": {
+      "RuleName": "-",
+      "UtcTime": "2026-03-18 19:33:25.726",
+      "ProcessGuid": "{36d07de9-98bf-69ba-f300-00000000dd02}",
+      "ProcessId": "10628",
+      "Image": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\145.0.3800.97\\msedgewebview2.exe",
+      "TargetFilename": "C:\\Users\\Prajwal\\AppData\\Local\\Packages\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\LocalState\\EBWebView\\Default\\Service Worker\\CacheStorage\\3b278e44f1419f0b07a0417a936be8182ad635d4\\index.txt.tmp",
+      "CreationUtcTime": "2026-03-18 19:33:25.726",
+      "User": "PRAJWAL-PC\\Prajwal"
+    }
+  },
+  {
+    "event_id": 11,
+    "event_name": "FileCreate",
+    "timestamp": "2026-03-18T19:33:25.7292411Z",
+    "pid": 10628,
+    "data": {
+      "RuleName": "-",
+      "UtcTime": "2026-03-18 19:33:25.726",
+      "ProcessGuid": "{36d07de9-98bf-69ba-f300-00000000dd02}",
+      "ProcessId": "10628",
+      "Image": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\145.0.3800.97\\msedgewebview2.exe",
+      "TargetFilename": "C:\\Users\\Prajwal\\AppData\\Local\\Packages\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\LocalState\\EBWebView\\Default\\Service Worker\\CacheStorage\\3b278e44f1419f0b07a0417a936be8182ad635d4\\index.txt~RF18c1621.TMP",
+      "CreationUtcTime": "2026-03-18 19:33:25.726",
+      "User": "PRAJWAL-PC\\Prajwal"
+    }
+  },
+  {
+    "event_id": 12,
+    "event_name": "RegistryCreateKey",
+    "timestamp": "2026-03-18T19:33:26.4271150Z",
+    "pid": 2800,
+    "data": {
+      "RuleName": "-",
+      "EventType": "CreateKey",
+      "UtcTime": "2026-03-18 19:33:26.414",
+      "ProcessGuid": "{36d07de9-98b0-69ba-3400-00000000dd02}",
+      "ProcessId": "2800",
+      "Image": "C:\\WINDOWS\\system32\\svchost.exe",
+      "TargetObject": "HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+      "User": "NT AUTHORITY\\NETWORK SERVICE"
+    }
+  },
+  {
+    "event_id": 3,
+    "event_name": "NetworkConnect",
+    "timestamp": "2026-03-18T19:33:28.6803716Z",
+    "pid": 10436,
+    "data": {
+      "RuleName": "-",
+      "UtcTime": "2026-03-18 19:33:26.736",
+      "ProcessGuid": "{36d07de9-ed02-69ba-9f06-00000000dd02}",
+      "ProcessId": "10436",
+      "Image": "C:\\Users\\Prajwal\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+      "User": "PRAJWAL-PC\\Prajwal",
+      "Protocol": "tcp",
+      "Initiated": "true",
+      "SourceIsIpv6": "false",
+      "SourceIp": "192.168.1.41",
+      "SourceHostname": "Prajwal-Pc.hgu_lan",
+      "SourcePort": "43767",
+      "SourcePortName": "-",
+      "DestinationIsIpv6": "false",
+      "DestinationIp": "140.82.113.21",
+      "DestinationHostname": "lb-140-82-113-21-iad.github.com",
+      "DestinationPort": "443",
+      "DestinationPortName": "https"
+    }
+  },
+  {
+    "event_id": 13,
+    "event_name": "RegistrySetValue",
+    "timestamp": "2026-03-18T19:33:28.9799874Z",
+    "pid": 5756,
+    "data": {
+      "RuleName": "-",
+      "EventType": "SetValue",
+      "UtcTime": "2026-03-18 19:33:28.970",
+      "ProcessGuid": "{36d07de9-98b1-69ba-8b00-00000000dd02}",
+      "ProcessId": "5756",
+      "Image": "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+      "TargetObject": "HKLM\\SOFTWARE\\Microsoft\\Wbem\\Tracing\\Providers\\CIMWin32 @ root/CIMV2\\134183360089701795",
+      "Details": "ExecQueryAsync: select __RELPATH, ParentProcessId from Win32_Process where (((name = \"browserhost.exe\" OR name = \"mc-extn-browserhost.exe\") AND SessionId = 1) AND commandline LIKE \"%%{4ED1F68A-5463-4931-9384-8FFF5ED91D92}%%\")",
+      "User": "NT AUTHORITY\\NETWORK SERVICE"
+    }
+  },
+  {
+    "event_id": 12,
+    "event_name": "RegistryCreateKey",
+    "timestamp": "2026-03-18T19:33:29.0276645Z",
+    "pid": 5756,
+    "data": {
+      "RuleName": "-",
+      "EventType": "DeleteValue",
+      "UtcTime": "2026-03-18 19:33:29.017",
+      "ProcessGuid": "{36d07de9-98b1-69ba-8b00-00000000dd02}",
+      "ProcessId": "5756",
+      "Image": "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+      "TargetObject": "HKLM\\SOFTWARE\\Microsoft\\Wbem\\Tracing\\Providers\\CIMWin32 @ root/CIMV2\\134183360089701795",
+      "User": "NT AUTHORITY\\NETWORK SERVICE"
+    }
+  },
+  {
+    "event_id": 12,
+    "event_name": "RegistryCreateKey",
+    "timestamp": "2026-03-18T19:33:29.0278580Z",
+    "pid": 4684,
+    "data": {
+      "RuleName": "-",
+      "EventType": "CreateKey",
+      "UtcTime": "2026-03-18 19:33:29.017",
+      "ProcessGuid": "{36d07de9-98b1-69ba-5f00-00000000dd02}",
+      "ProcessId": "4684",
+      "Image": "C:\\WINDOWS\\system32\\svchost.exe",
+      "TargetObject": "HKLM\\SOFTWARE\\Microsoft\\Wbem\\Tracing",
+      "User": "NT AUTHORITY\\SYSTEM"
+    }
+  }
+]

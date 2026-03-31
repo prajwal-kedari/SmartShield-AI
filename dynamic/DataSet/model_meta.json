@@ -1,0 +1,19 @@
+{
+  "model_type": "XGBClassifier",
+  "n_features": 52,
+  "best_iteration": 50,
+  "best_auc": 0.999999912637305,
+  "test_auc": 0.999999912637305,
+  "cv_mean_auc": 0.9999987884135688,
+  "cv_std_auc": 1.2085696063178978e-06,
+  "threshold_malware": 0.55,
+  "threshold_watchlist": 0.35,
+  "dropped_leaky": [
+    "Category"
+  ],
+  "dropped_zero_var": [
+    "pslist.nprocs64bit",
+    "handles.nport",
+    "svcscan.interactive_process_services"
+  ]
+}

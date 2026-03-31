@@ -1,0 +1,35 @@
+<Sysmon schemaversion="4.82">
+  <EventFiltering>
+
+    <!-- Capture ALL process creates -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessCreate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Capture ALL network connections -->
+    <RuleGroup name="" groupRelation="or">
+      <NetworkConnect onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Capture ALL remote threads -->
+    <RuleGroup name="" groupRelation="or">
+      <CreateRemoteThread onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Capture ALL file creates -->
+    <RuleGroup name="" groupRelation="or">
+      <FileCreate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Capture ALL registry events -->
+    <RuleGroup name="" groupRelation="or">
+      <RegistryEvent onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Capture ALL DNS queries -->
+    <RuleGroup name="" groupRelation="or">
+      <DnsQuery onmatch="exclude"/>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>
