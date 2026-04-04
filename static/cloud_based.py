@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = ""  # replace with your VT API key
+API_KEY = "e3d85a9fe98800a129b860f1ad4e3c1e55f17e2ff144f11cd0445698620d6aa8"  # replace with your VT API key
 BASE_URL = "https://www.virustotal.com/api/v3/files/{}"
 
 def vt_check_hash(sha256_hash):
@@ -12,9 +12,9 @@ def vt_check_hash(sha256_hash):
         stats = vt_data["data"]["attributes"]["last_analysis_stats"]
         print("VirusTotal analysis:")
         print(stats)
-        return vt_data
+        return True , stats["malicious"]
     elif r.status_code == 404:
-        return None  # not found in VT
+        return False ,None # not found in VT
     else:
         raise Exception(f"VT error {r.status_code}: {r.text}")
 
@@ -25,7 +25,7 @@ def check_hash_malwarebazaar(sha256_hash):
     url = "https://mb-api.abuse.ch/api/v1/"
     headers = {
         "User-Agent": "MalwareLookupScript/1.0",
-        "Auth-Key": ""
+        "Auth-Key": "3ecc340fb3c81821ab1ad11680f7a4198da1e3393698072f"
     }
     payload = {
         "query": "get_info",
@@ -45,8 +45,10 @@ def check_hash_malwarebazaar(sha256_hash):
             print(f"    Signature:{file_info.get('signature')}")
             print(f"    First Seen:{file_info.get('first_seen')}")
             print(f"    Reporter: {file_info.get('reporter')}")
+            return True , file_info.get('signature')
         else:
             print("[SAFE] Hash not found in MalwareBazaar database.")
+            return False , None
 
     except requests.exceptions.HTTPError as e:
         print(f"[!] HTTP Error: {e}")
@@ -56,7 +58,7 @@ def check_hash_malwarebazaar(sha256_hash):
 
 
 # check_hash_malwarebazaar("0f81bee03e15e394a587be71726b59670b8482ddb4c9aa87b91cce1cf8a40d17")
-
+# vt_check_hash("0f81bee03e15e394a587be71726b59671b8482ddb4caaa87b91cce1cf8a40d17")
 
 # vt_data = vt_check_hash("dbeec44f45e3bcf0b1da9f51b2be8dcc2d1777e88b39b087e724238d865e5514")
 # if vt_data is None:
