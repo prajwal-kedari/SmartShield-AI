@@ -1,6 +1,4 @@
 import hashlib
-
-
 def hash_file(path, chunk_size=8192):
     # h_md5 = hashlib.md5()
     # h_sha1 = hashlib.sha1()
