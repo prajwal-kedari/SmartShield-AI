@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureGuard Pro - Enhanced Full Screen</title>
+    <style>
+      /* --- GLOBAL & FONT --- */
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        --color-bg: #111827;
+        --color-glass-bg: rgba(30, 41, 59, 0.5);
+        --color-glass-border: rgba(255, 255, 255, 0.1);
+
+        --color-accent-teal: #00d9e1;
+        --color-accent-green: #1ee3aa;
+        --color-warning-red: #f43f5e;
+        --color-scan-pending: #facc15; /* Yellow for pending */
+
+        --color-text-primary: #f8fafc;
+        --color-text-secondary: #94a3b8;
+        --color-text-dark: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* --- BODY (Full Screen Container) --- */
+      body,
+      html {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+        background-color: #0c0f14;
+        background-image: radial-gradient(
+            at 80% 20%,
+            hsla(214, 40%, 15%, 0.5) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 10% 90%,
+            hsla(184, 90%, 20%, 0.3) 0px,
+            transparent 50%
+          );
+      }
+
+      /* --- MAIN APP WINDOW (Full Viewport) --- */
+      .app-window {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        background: rgba(17, 24, 39, 0.9);
+      }
+
+      /* --- 1. APP HEADER --- */
+      .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 30px; /* Consistent side padding */
+        border-bottom: 1px solid var(--color-glass-border);
+        flex-shrink: 0;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--color-accent-teal);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z'/%3E%3C/svg%3E");
+        background-size: 18px 18px;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+      .logo h1 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
+      .real-time-protection {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .real-time-protection .status {
+        text-align: right;
+      }
+      .real-time-protection .status-title {
+        color: var(--color-text-primary);
+        font-weight: 500;
+        font-size: 0.85rem;
+      }
+      .real-time-protection .status-desc {
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+      .real-time-protection .status-desc.active {
+        color: var(--color-accent-green);
+      }
+      .real-time-protection .status-desc.inactive {
+        color: var(--color-warning-red);
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 45px;
+        height: 25px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 17px;
+        width: 17px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--color-accent-teal);
+        box-shadow: 0 0 8px var(--color-accent-teal);
+      }
+      input:checked + .slider:before {
+        transform: translateX(19px);
+      }
+
+      /* --- 2. APP CONTENT (2-Column Layout) --- */
+      .app-content {
+        display: flex;
+        flex-grow: 1;
+        padding: 20px 30px 30px 30px; /* Reduced top padding, kept side padding */
+        gap: 20px;
+        min-height: 0; /* Ensures flex-grow works correctly with overflow */
+      }
+
+      /* --- 2a. LEFT COLUMN: Drop Zone + File Queue (New Structure) --- */
+      .drop-zone-and-queue-container {
+        flex: 1; /* Takes half the width */
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Spacing between drop zone and file queue */
+      }
+
+      .drop-zone {
+        height: 150px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--color-glass-bg);
+        border: 2px dashed #4b5563;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+      }
+
+      .drop-zone.drag-over {
+        border-color: var(--color-accent-teal);
+        background: rgba(0, 217, 225, 0.08);
+        box-shadow: 0 0 10px var(--color-accent-teal);
+      }
+
+      .drop-zone-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        margin: 0 auto 10px auto; /* Reduced margin */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z'/%3E%3C/svg%3E");
+        background-size: 28px 28px;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+      .drop-zone h2 {
+        font-size: 1rem;
+        color: var(--color-text-primary);
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+      .drop-zone p {
+        font-size: 0.8rem;
+        color: var(--color-text-secondary);
+      }
+      .drop-zone input {
+        display: none;
+      }
+
+      /* File Queue */
+      .file-queue-box {
+        flex-grow: 1; /* Takes the remaining height in the left column */
+        display: flex;
+        flex-direction: column;
+        min-height: 0; /* ADDED: Ensures flex child can shrink and allow scrolling */
+      }
+
+      .queue-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin-bottom: 10px;
+      }
+
+      .file-list {
+        flex-grow: 1;
+        background: var(--color-glass-bg);
+        border: 1px solid var(--color-glass-border);
+        border-radius: 12px;
+        overflow-y: auto; /* This is the key property for scrolling */
+        padding: 10px;
+        min-height: 0; /* ADDED: Ensures this element respects the flex-grow height */
+        /* Aesthetic scrollbar */
+        scrollbar-width: thin;
+        scrollbar-color: #374151 #1f2937;
+      }
+      .file-list::-webkit-scrollbar {
+        width: 8px;
+      }
+      .file-list::-webkit-scrollbar-thumb {
+        background-color: #374151;
+        border-radius: 4px;
+      }
+      .file-list::-webkit-scrollbar-track {
+        background-color: #1f2937;
+        border-radius: 4px;
+      }
+
+      /* File List Item Styles */
+      .file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        margin-bottom: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+      .file-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .file-details {
+        flex-grow: 1;
+        min-width: 0;
+      }
+      .file-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-size {
+        font-size: 0.7rem;
+        color: var(--color-text-secondary);
+      }
+      .file-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 10px;
+        flex-shrink: 0;
+      }
+      .status-badge {
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 10px;
+        text-transform: uppercase;
+      }
+      .status-pending {
+        background-color: var(--color-scan-pending);
+        color: var(--color-text-dark);
+      }
+      .status-scanning {
+        background-color: var(--color-accent-teal);
+        color: var(--color-text-dark);
+      }
+      .status-clean {
+        background-color: var(--color-accent-green);
+        color: var(--color-text-dark);
+      }
+      .status-malicious {
+        background-color: var(--color-warning-red);
+        color: var(--color-text-primary);
+      }
+      .btn-remove {
+        background: none;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        font-size: 0.9rem;
+        line-height: 1;
+        padding: 0 5px;
+        transition: color 0.2s;
+      }
+      .btn-remove:hover {
+        color: var(--color-warning-red);
+      }
+      .no-files {
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: 0.9rem;
+        padding-top: 50px;
+      }
+
+      /* --- 2b. RIGHT COLUMN: SCAN SETTINGS & ACTION --- */
+      .scan-settings {
+        flex: 1; /* Takes half the width (equal to the left column) */
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Settings Card Styles (Minimized Padding) */
+      .settings-card {
+        background: var(--color-glass-bg);
+        border: 1px solid var(--color-glass-border);
+        border-radius: 12px;
+        padding: 15px;
+      }
+      .settings-card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .settings-card-header svg {
+        width: 14px;
+        height: 14px;
+        fill: var(--color-accent-teal);
+        flex-shrink: 0;
+      }
+      .settings-card-header h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .option-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .option-item:last-child {
+        margin-bottom: 0;
+      }
+      .option-item span {
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        font-weight: 500;
+      }
+
+      /* --- 3. SCAN ACTION AREA (Bottom Right) --- */
+      .scan-action-area {
+        margin-top: auto;
+        padding-top: 5px;
+      }
+
+      .scan-status-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .scan-status-line span {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+      }
+
+      /* Loading Bar Aesthetics */
+      .loading-bar-container {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+      .loading-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #1ee3aa, var(--color-accent-teal));
+        border-radius: 4px;
+        transition: width 0.4s ease-out;
+        box-shadow: 0 0 5px var(--color-accent-teal);
+      }
+
+      .btn-primary-scan {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-dark);
+        background: var(--color-accent-teal);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 15px rgba(0, 217, 225, 0.4);
+      }
+
+      .btn-primary-scan:hover:not(:disabled) {
+        background: #2cfdff;
+        box-shadow: 0 0 25px rgba(0, 217, 225, 0.7);
+        transform: translateY(-2px);
+      }
+      .btn-primary-scan:disabled {
+        background: #4b5563;
+        box-shadow: none;
+        cursor: not-allowed;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-window">
+      <header class="app-header">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <h1>SmartShild-AI</h1>
+        </div>
+        <div class="real-time-protection">
+          <div class="status">
+            <div class="status-title">Real-Time Protection</div>
+            <div class="status-desc active" id="realTimeStatus">
+              Active: Monitoring System
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="realTimeToggle" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </header>
+
+      <main class="app-content">
+        <div class="drop-zone-and-queue-container">
+          <section class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" />
+            <div class="drop-zone-content">
+              <div class="drop-zone-icon"></div>
+              <h2>Drop files here</h2>
+              <p>or click to browse</p>
+            </div>
+          </section>
+
+          <div class="file-queue-box">
+            <h2 class="queue-title">
+              File Scan Queue (<span id="fileCount">0</span>)
+            </h2>
+            <section class="file-list" id="fileList">
+              <div class="no-files" id="noFilesMsg">
+                Drop files to begin queueing for a scan.
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <section class="scan-settings">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <path
+                  d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z"
+                />
+              </svg>
+              <h3>Online Scanning</h3>
+            </div>
+            <div class="option-item">
+              <span>VirusTotal</span>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="option-item">
+              <span>MalwareBazaar</span>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <path
+                  d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"
+                />
+                <path
+                  d="M4.5 3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM4.5 6a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM4.5 9a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM4.5 12a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm2 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"
+                />
+              </svg>
+              <h3>ML Detection</h3>
+            </div>
+            <div class="option-item">
+              <span>Ember</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="checkBox" />
+                <span class="slider"></span>
+                <p></p>
+              </label>
+            </div>
+            <div class="option-item">
+              <span>Custom</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="checkBox" />
+                <span class="slider"></span>
+                <p class></p>
+              </label>
+            </div>
+          </div>
+
+          <div class="scan-action-area">
+            <div class="scan-status-line">
+              <span id="scanStatusText">Ready to Scan</span>
+              <span id="scanProgress">0%</span>
+            </div>
+            <div class="loading-bar-container">
+              <div class="loading-bar" id="loadingBar" style="width: 0%"></div>
+            </div>
+            <button class="btn-primary-scan" id="startScanButton" disabled>
+              ► Start Scan
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const realTimeToggle = document.getElementById("realTimeToggle");
+        const realTimeStatus = document.getElementById("realTimeStatus");
+        const dropZone = document.getElementById("dropZone");
+        const fileInput = document.getElementById("fileInput");
+        const fileList = document.getElementById("fileList");
+        const noFilesMsg = document.getElementById("noFilesMsg");
+        const fileCount = document.getElementById("fileCount");
+        const startScanButton = document.getElementById("startScanButton");
+        const scanStatusText = document.getElementById("scanStatusText");
+        const scanProgress = document.getElementById("scanProgress");
+        const loadingBar = document.getElementById("loadingBar");
+        let filesQueue = [];
+        let isScanning = false;
+
+        //const checkBoxes = document.querySelectorAll(".checkBox");
+        // const paras = document.querySelectorAll("p");
+        // ...existing code...
+
+        async function uploadAndScanFile(file) {
+          console.log(file);
+          const fd = new FormData();
+          fd.append("file", file);
+
+          // optional: flags for vt/mb/cust/ember
+          fd.append("vt", "1");
+          fd.append("mb", "1");
+          fd.append("cust", "1"); // or '0'
+          fd.append("ember", "1");
+
+          const resp = await fetch("http://localhost:5000/api/scan", {
+            method: "POST",
+            body: fd,
+          });
+          if (!resp.ok) {
+            console.error("Scan request failed", resp.statusText);
+            return;
+          }
+          const result = await resp.json();
+          console.log("scan result", result);
+          // TODO: render result in UI
+          showAnalysis(result);
+        }
+
+        // wire to your drop handler / file input
+        dropZone.addEventListener("drop", async (e) => {
+          e.preventDefault();
+          dropZone.classList.remove("dragging");
+          const files = Array.from(e.dataTransfer.files || []);
+          for (const f of files) {
+            await uploadAndScanFile(f);
+          }
+        });
+
+        // helper to render (simple)
+        function showAnalysis(res) {
+          // replace with your UI code
+          alert(JSON.stringify(res, null, 2));
+        }
+
+        // ...existing code...
+
+        // checkBoxes.forEach((box) => {
+        //   box.addEventListener("change", () => {
+        //     const p = box.nextElementSibling;
+        //     if (p) {
+        //       p.textContent = box.checked ? "Enabled" : "Disabled";
+        //     }
+        //   });
+        // });
+        // --- Utility Functions ---
+
+        function formatFileSize(bytes) {
+          if (bytes === 0) return "0 Bytes";
+          const k = 1024;
+          const sizes = ["Bytes", "KB", "MB", "GB"];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return (
+            parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+          );
+        }
+
+        function updateQueueState() {
+          fileCount.textContent = filesQueue.length;
+          noFilesMsg.style.display = filesQueue.length === 0 ? "block" : "none";
+          startScanButton.disabled = filesQueue.length === 0 || isScanning;
+        }
+
+        function createFileItem(file) {
+          const item = document.createElement("div");
+          item.className = "file-item";
+          item.dataset.fileName = file.name;
+
+          const status = "Pending"; // Initial status
+
+          item.innerHTML = `
+                          <div class="file-details">
+                              <div class="file-name">${file.name}</div>
+                              <div class="file-size">${formatFileSize(
+                                file.size
+                              )}</div>
+                          </div>
+                          <div class="file-status">
+                              <span class="status-badge status-pending">${status}</span>
+                              <button class="btn-remove" data-filename="${
+                                file.name
+                              }">×</button>
+                          </div>
+                      `;
+
+          // Add to the beginning of the list (most recent first)
+          fileList.prepend(item);
+
+          // Add event listener for the remove button
+          item.querySelector(".btn-remove").addEventListener("click", (e) => {
+            removeFile(e.currentTarget.dataset.filename);
+          });
+        }
+
+        // function addFilesToQueue(files) {
+        //   for (const file of files) {
+        //     if (
+        //       !filesQueue.some(
+        //         (f) => f.name === file.name && f.size === file.size
+        //       )
+        //     ) {
+        //       filesQueue.push(file);
+
+        //       // ✅ Works in PyWebView — gives absolute local path
+        //       const fullPath = file.path || file.name;
+        //       console.log("📂 Absolute Path:", fullPath);
+
+        //       createFileItem(file);
+        //     }
+        //   }
+        //   updateQueueState();
+        // }
+
+        function addFilesToQueue(files) {
+          // Normalize to array
+          const arr = Array.from(files || []);
+          for (const file of arr) {
+            // If pywebview returned a path string, create a small file-like object
+            let fileObj = file;
+            if (typeof file === "string") {
+              const path = file;
+              const name = path.split(/[/\\]/).pop();
+              fileObj = { name, size: 0, path };
+            }
+
+            // Avoid duplicates (compare name, size and path)
+            if (
+              !filesQueue.some(
+                (f) =>
+                  f.name === fileObj.name &&
+                  f.size === fileObj.size &&
+                  f.path === fileObj.path
+              )
+            ) {
+              filesQueue.push(fileObj);
+
+              // Works for both real File objects and our file-like objects
+              const fullPath = fileObj.path || fileObj.name;
+              console.log("📂 Queued:", fileObj.name, "path:", fullPath);
+
+              createFileItem(fileObj);
+            }
+          }
+          updateQueueState();
+        }
+
+        function removeFile(fileName) {
+          // Remove from the internal queue
+          filesQueue = filesQueue.filter((f) => f.name !== fileName);
+
+          // Remove from the DOM
+          const itemToRemove = document.querySelector(
+            `.file-item[data-file-name="${fileName}"]`
+          );
+          if (itemToRemove) {
+            itemToRemove.remove();
+          }
+
+          updateQueueState();
+        }
+
+        // --- Drag & Drop Handlers ---
+        let isSelecting = false;
+
+        dropZone.addEventListener("click", async (e) => {
+          if (isSelecting) return; // Prevent multiple simultaneous selections
+          isSelecting = true;
+          try {
+            const files = await pywebview.api.select_files();
+            // fileInput.click();
+            // const files = await e.target.files;
+            addFilesToQueue(files);
+            console.log(files);
+          } catch (error) {
+            console.error("Error selecting files:", error);
+          } finally {
+            isSelecting = false;
+          }
+        });
+
+        const handleClickForDropZone = async (e) => {
+          if (isSelecting) return; // Prevent multiple simultaneous selections
+          isSelecting = true;
+          const optionsObj = {};
+          try {
+            // checkBoxes.forEach((box) => {
+            //   if (box.checked) {
+            //     optionsObj[box.value] = true;
+            //   } else {
+            //     optionsObj[box.value] = false;
+            //   }
+            // });
+            // console.log("Options sent to Python:", optionsObj);
+            // const files = await pywebview.api.select_files(optionsObj);
+            addFilesToQueue(files);
+            console.log(filesQueue);
+          } catch (error) {
+            console.error("Error selecting files:", error);
+          } finally {
+            isSelecting = false;
+          }
+        };
+
+        // fileInput.addEventListener("change", (e) => {
+        //   addFilesToQueue(e.target.files);
+        //   console.log(files);
+        //   e.target.value = ""; // Clear input to allow re-uploading the same file
+        // });
+
+        fileInput.addEventListener("change", (e) => {
+          addFilesToQueue(e.target.files);
+          console.log("fileInput.files:", e.target.files);
+          e.target.value = ""; // Clear input to allow re-uploading the same file
+        });
+
+        ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+          dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        ["dragenter", "dragover"].forEach((eventName) => {
+          dropZone.addEventListener(
+            eventName,
+            () => dropZone.classList.add("drag-over"),
+            false
+          );
+        });
+
+        ["dragleave", "drop"].forEach((eventName) => {
+          dropZone.addEventListener(
+            eventName,
+            () => dropZone.classList.remove("drag-over"),
+            false
+          );
+        });
+
+        dropZone.addEventListener(
+          "drop",
+          (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            addFilesToQueue(files);
+          },
+          false
+        );
+
+        // --- Real-Time Toggle Logic ---
+
+        realTimeToggle.addEventListener("change", function () {
+          if (realTimeToggle.checked) {
+            realTimeStatus.textContent = "Active: Monitoring System";
+            realTimeStatus.className = "status-desc active";
+          } else {
+            realTimeStatus.textContent = "Inactive";
+            realTimeStatus.className = "status-desc inactive";
+          }
+        });
+
+        // --- Scan Simulation Logic ---
+
+        function updateFileStatusUI(fileName, newStatus) {
+          const item = document.querySelector(
+            `.file-item[data-file-name="${fileName}"]`
+          );
+          if (item) {
+            const badge = item.querySelector(".status-badge");
+            badge.textContent = newStatus;
+            badge.className = "status-badge status-" + newStatus.toLowerCase();
+            // Disable remove button while scanning
+            item.querySelector(".btn-remove").disabled =
+              newStatus === "Scanning";
+          }
+        }
+
+         function simulateScan() {
+          if (filesQueue.length === 0) {
+            isScanning = false;
+            updateQueueState();
+            scanStatusText.textContent = "Scan Complete!";
+            return;
+          }
+
+          isScanning = true;
+          updateQueueState();
+
+          const fileToScan = filesQueue[0];
+          updateFileStatusUI(fileToScan.name, "Scanning");
+          scanStatusText.textContent = `Scanning: ${fileToScan.name}`;
+
+          let progress = 0;
+          const totalFiles = filesQueue.length;
+
+          const scanInterval = setInterval(async() => {
+            if (progress >= 100) {
+              clearInterval(scanInterval);
+              try{
+              const scanResult = await  pywebview.api.fileScanner(fileToScan);
+              updateFileStatusUI(fileToScan.name, scanResult);
+              } catch (error) {
+              console.error(`Error scanning ${fileToScan.name}:`, error);
+              updateFileStatusUI(fileToScan.name, "Error");
+             }
+
+              // const result = Math.random() < 0.5 ? "Malicious" : "Clean";
+              // updateFileStatusUI(fileToScan.name, result);
+              
+
+              // Remove the completed file from the queue
+              filesQueue.shift();
+
+              // Calculate overall progress based on completed files
+              const filesCompleted = totalFiles - filesQueue.length;
+              const overallProgress = (filesCompleted / totalFiles) * 100;
+              loadingBar.style.width = overallProgress + "%";
+              scanProgress.textContent = Math.round(overallProgress) + "%";
+
+              // Proceed to the next file after a brief delay
+              setTimeout(simulateScan, 500);
+            } else {
+              // Increment progress for the current file
+              progress += 10;
+
+              // Calculate true overall progress: completed files + current file progress
+              const filesCompleted = totalFiles - filesQueue.length - 1;
+              const currentFileProgress = progress / 100;
+              const overallProgress =
+                ((filesCompleted + currentFileProgress) / totalFiles) * 100;
+
+              loadingBar.style.width = overallProgress + "%";
+              scanProgress.textContent = Math.round(overallProgress) + "%";
+            }
+          }, 100);
+        }
+
+        startScanButton.addEventListener("click", async () => {
+            const checkboxes = document.querySelectorAll(' input[type="checkbox"]');
+            const boolList = Array.from(checkboxes).map(cb => cb.checked);
+            const files = await pywebview.api.start_scan(...boolList.slice(1, 5));
+            // console.log(files);
+          // document.getElementById('startScanButton').innerText= pywebview.api.buttonunderscoreclick("Prajwal");
+          //   pywebview.api.buttonunderscoreclick(files);
+          //   pywebview.api.buttonunderscoreclick("vivek").then((result) => {
+          //     console.log("Python returned:", result);
+          //     document.getElementById("startScanButton").innerText = result;
+          //   });
+          //   pywebview.api.buttonunderscoreclick("scanning").then((result) => {
+          //     document.getElementById("startScanButton").innerText = result;
+          //   });
+          // await uploadAndScanFile(filesQueue[0]);
+          if (!isScanning && filesQueue.length > 0) {
+            // Reset UI for new scan
+            loadingBar.style.width = "0%";
+            scanProgress.textContent = "0%";
+            scanStatusText.textContent = "Starting Scan...";
+
+            // Reset all files to pending status in UI before starting
+            document.querySelectorAll(".file-item").forEach((item) => {
+              const badge = item.querySelector(".status-badge");
+              badge.textContent = "Pending";
+              badge.className = "status-badge status-pending";
+            });
+
+            // The main scan function
+            simulateScan();
+          }
+        });
+
+        // Initial state update
+        updateQueueState();
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </body>
+</html>

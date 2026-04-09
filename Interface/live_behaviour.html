@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartShield AI - Live Detection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+    }
+
+    .backdrop.show {
+      opacity: 1;
+    }
+/*
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 90%;
+      max-width: 440px;
+      background: linear-gradient(145deg, rgba(30, 30, 60, 0.9), rgba(20, 20, 45, 0.95));
+      border-radius: 20px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(239, 68, 68, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 101;
+      overflow: hidden;
+    } */
+.popup {
+  position: fixed;
+  inset: 0;   /* 🔥 FULL SCREEN (top:0, left:0, right:0, bottom:0) */
+  width: 100vw;
+  height: 100vh;
+
+  border-radius: 0;   /* remove rounded corners */
+  max-width: none;
+
+  transform: none;    /* ❌ remove translate/scale */
+  opacity: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2b 100%);
+  z-index: 9999;
+
+  transition: none; /* instant show */
+}
+    .popup.show {
+      opacity: 1;
+      /* transform: translate(-50%, -50%) scale(1); */
+    }
+
+    .popup-header {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.05));
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      animation: pulse-icon 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.7); }
+    }
+
+    .header-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+
+    .header-text h2 {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .popup-body {
+      padding: 20px;
+    }
+
+    .alert-banner {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.15));
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+      animation: alert-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes alert-pulse {
+      0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+      }
+      50% { 
+        box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.2);
+      }
+    }
+
+    .alert-title {
+      color: #ef4444;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .alert-subtitle {
+      color: rgba(239, 68, 68, 0.7);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .details-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-icon svg {
+      width: 14px;
+      height: 14px;
+      fill: rgba(255, 255, 255, 0.5);
+    }
+
+    .detail-name {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+    }
+
+    .detail-value {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .detail-value.danger {
+      color: #ef4444;
+    }
+
+    .detail-value.path {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .probability-section {
+      margin-top: 16px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .prob-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .prob-info {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .prob-value {
+      color: #ef4444;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .prob-label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+    }
+
+    .threshold-info {
+      text-align: right;
+    }
+
+    .threshold-label {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 10px;
+    }
+
+    .threshold-value {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .bar-container {
+      height: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #ef4444, #dc2626);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .threshold-marker {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 1px;
+    }
+
+    .popup-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-warning:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop show" id="backdrop"></div>
+  
+  <div class="popup show" id="popup">
+    <div class="popup-header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="header-text">
+        <h2>Live Malware Detection</h2>
+        <p>SmartShield AI Behavioral Analysis</p>
+      </div>
+    </div>
+
+    <div class="popup-body">
+      <div class="alert-banner">
+        <div class="alert-title">MALWARE DETECTED</div>
+        <div class="alert-subtitle">[BEHAVIORAL]</div>
+      </div>
+
+      <div class="details-section">
+        <div class="detail-row">
+          <div class="detail-label">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            </div>
+            <span class="detail-name">Time</span>
+          </div>
+          <span class="detail-value" id="timeValue">2026-04-09T21:01:12</span>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24"><path d="M15 9H9v6h6V9zm-2 4h-2v-2h2v2zm8-2V9h-2V7c0-1.1-.9-2-2-2h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v2H3v2h2v2H3v2h2v2c0 1.1.9 2 2 2h2v2h2v-2h2v2h2v-2h2c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2zm-4 6H7V7h10v10z"/></svg>
+            </div>
+            <span class="detail-name">PID</span>
+          </div>
+          <span class="detail-value danger" id="pidValue">5548</span>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+            </div>
+            <span class="detail-name">Path</span>
+          </div>
+          <span class="detail-value path" id="pathValue" title="(unknown)">(unknown)</span>
+        </div>
+      </div>
+
+      <div class="probability-section">
+        <div class="prob-header">
+          <div class="prob-info">
+            <span class="prob-value" id="probValue">0.955</span>
+            <span class="prob-label">probability</span>
+          </div>
+          <div class="threshold-info">
+            <div class="threshold-label">Threshold</div>
+            <div class="threshold-value" id="thresholdValue">0.55</div>
+          </div>
+        </div>
+        <div class="bar-container">
+          <div class="bar-fill" id="probBar" style="width: 95.5%"></div>
+          <div class="threshold-marker" id="thresholdMarker" style="left: 55%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <button class="btn btn-danger" onclick="killProcess()">Kill Process</button>
+      <button class="btn btn-warning" onclick="quarantine()">Quarantine</button>
+      <button class="btn btn-secondary" onclick="hide()">Ignore</button>
+    </div>
+  </div>
+
+  <script>
+    function setLiveMalware(data) {
+      document.getElementById('timeValue').textContent = data.time || 'Unknown';
+      document.getElementById('pidValue').textContent = data.pid || 'Unknown';
+      document.getElementById('pathValue').textContent = data.path || '(unknown)';
+      document.getElementById('pathValue').title = data.path || '(unknown)';
+
+      const prob = data.prob || 0;
+      const threshold = data.threshold || 0.55;
+
+      document.getElementById('probValue').textContent = prob.toFixed(3);
+      document.getElementById('thresholdValue').textContent = threshold.toFixed(2);
+      document.getElementById('probBar').style.width = (prob * 100) + '%';
+      document.getElementById('thresholdMarker').style.left = (threshold * 100) + '%';
+    }
+
+    function show() {
+      document.getElementById('backdrop').classList.add('show');
+      document.getElementById('popup').classList.add('show');
+    }
+
+    function hide() {
+      document.getElementById('backdrop').classList.remove('show');
+      document.getElementById('popup').classList.remove('show');
+    }
+
+    function killProcess() {
+      alert('Process terminated successfully!');
+      hide();
+    }
+
+    function quarantine() {
+      alert('Process quarantined successfully!');
+      hide();
+    }
+
+    // Initialize with default data
+    // setLiveMalware({
+    //   time: "2026-04-09T21:01:12",
+    //   pid: 5548,
+    //   path: "(unknown)",
+    //   prob: 0.955,
+    //   threshold: 0.55
+    // });
+    window.addEventListener('pywebviewready', async () => {
+    const data = await window.pywebview.api.Send_Data();
+    setLiveMalware(data);
+    show();});
+  </script>
+</body>
+</html>

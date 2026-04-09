@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartShield AI - Advanced Malware Protection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* SmartShield Custom Styles */
+    .smartshield-bg {
+      background: linear-gradient(135deg, #0c1222 0%, #1a1f3a 50%, #0f172a 100%);
+      background-attachment: fixed;
+    }
+
+    .smartshield-bg::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(99, 179, 237, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(159, 122, 234, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+
+    .glass-navbar {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .neon-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(139, 92, 246, 0.15),
+        0 0 60px rgba(139, 92, 246, 0.05),
+        0 0 0 1px rgba(139, 92, 246, 0.1) inset;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .neon-text {
+      background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .glow-button {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      box-shadow: 
+        0 0 30px rgba(56, 189, 248, 0.4),
+        0 0 60px rgba(129, 140, 248, 0.2),
+        0 10px 40px -10px rgba(56, 189, 248, 0.5);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glow-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 0 40px rgba(56, 189, 248, 0.5),
+        0 0 80px rgba(129, 140, 248, 0.3),
+        0 15px 50px -10px rgba(56, 189, 248, 0.6);
+    }
+
+    .glow-button:disabled {
+      background: rgba(100, 116, 139, 0.3);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .neon-button {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      box-shadow: 
+        0 0 20px rgba(139, 92, 246, 0.4),
+        0 0 40px rgba(139, 92, 246, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .neon-button:hover {
+      box-shadow: 
+        0 0 30px rgba(139, 92, 246, 0.5),
+        0 0 60px rgba(139, 92, 246, 0.3);
+    }
+
+    .drop-zone {
+      border: 2px dashed rgba(148, 163, 184, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .drop-zone:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+    }
+
+    .neon-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .neon-input:focus {
+      outline: none;
+      border-color: rgba(139, 92, 246, 0.6);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .status-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    .hover-lift {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-2px) scale(1.005);
+      box-shadow: 
+        0 35px 60px -15px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    }
+
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%);
+      border-radius: 3px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.7) 0%, rgba(139, 92, 246, 0.7) 100%);
+    }
+
+    /* Firefox scrollbar */
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.05);
+    }
+
+    /* Toggle Switch Styles */
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 20px;
+      background: rgba(51, 65, 85, 0.5);
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: linear-gradient(to right, #38bdf8, #6366f1);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 9999px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch.active::after {
+      transform: translateX(20px);
+    }
+
+    /* Large Toggle for Navbar */
+    .toggle-switch-lg {
+      width: 44px;
+      height: 24px;
+    }
+
+    .toggle-switch-lg::after {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* File item hover */
+    .file-item:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .remove-btn {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Toast notification */
+    #toast {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #toast.hidden {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Pywebview ready indicator */
+    #pywebviewIndicator {
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body class="smartshield-bg min-h-screen text-white">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-[100] px-4 py-2.5 rounded-xl text-xs font-medium text-white shadow-xl" style="background: rgba(30,40,60,0.95); border: 1px solid rgba(255,255,255,0.1);">
+    <span id="toastMsg"></span>
+  </div>
+
+  <div class="relative z-10 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="glass-navbar sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold gradient-text">SmartShield AI</h1>
+            <p class="text-[10px] text-slate-400 font-medium">Advanced Protection System</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- PyWebView status indicator -->
+          <div id="pywebviewIndicator" class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5" title="PyWebView bridge status">
+            <div id="pywebviewDot" class="w-1.5 h-1.5 rounded-full bg-amber-400 status-dot"></div>
+            <span id="pywebviewLabel" class="text-[10px] text-amber-400">Connecting...</span>
+          </div>
+
+          <!-- AI Engine Button -->
+          <div class="relative">
+            <button id="aiEngineBtn" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all bg-white/5 hover:bg-white/10" title="AI Engine Settings">
+              <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2a1 1 0 011 1v1.07A8.001 8.001 0 0119.93 11H21a1 1 0 110 2h-1.07A8.001 8.001 0 0113 19.93V21a1 1 0 11-2 0v-1.07A8.001 8.001 0 014.07 13H3a1 1 0 110-2h1.07A8.001 8.001 0 0111 4.07V3a1 1 0 011-1zm0 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8zm0 2a2 2 0 100 4 2 2 0 000-4z"/>
+              </svg>
+            </button>
+
+            <!-- AI Engine Panel -->
+            <div id="aiEnginePanel" class="hidden absolute right-0 top-full mt-2 w-72 neon-card rounded-2xl p-4 z-50">
+              <h3 class="text-sm font-semibold neon-text mb-3">AI Engine</h3>
+              
+              <div class="space-y-2 mb-3">
+                <label id="localOption" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all bg-gradient-to-r from-purple-500/30 to-pink-500/20 border-2 border-purple-400/50 shadow-lg" style="box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);">
+                  <input type="radio" name="inference" value="local" checked class="w-4 h-4 accent-purple-500">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/30">
+                    <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <span class="text-sm font-medium text-white">Local Prediction</span>
+                    <p class="text-[10px] text-slate-400">Process on device</p>
+                  </div>
+                </label>
+                
+                <label id="remoteOption" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all bg-slate-800/80 border-2 border-slate-600/50 hover:bg-slate-700/80">
+                  <input type="radio" name="inference" value="remote" class="w-4 h-4 accent-purple-500">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-600/50">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <span class="text-sm font-medium text-slate-300">Remote Prediction</span>
+                    <p class="text-[10px] text-slate-400">Use server API</p>
+                  </div>
+                </label>
+              </div>
+
+              <div id="remoteSettings" class="hidden space-y-2 pt-2 border-t border-white/10">
+                <input type="text" id="serverUrl" placeholder="http://192.168.1.10:5000/predict" class="neon-input w-full px-3 py-2 rounded-lg text-xs text-white placeholder-slate-500">
+                <div class="flex items-center gap-2">
+                  <button id="testConnectionBtn" class="neon-button flex-1 py-1.5 px-3 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"/>
+                    </svg>
+                    Test
+                  </button>
+                  <div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5">
+                    <div id="connectionDot" class="w-1.5 h-1.5 rounded-full bg-slate-500"></div>
+                    <span id="connectionStatus" class="text-[10px] text-slate-400">Not tested</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Apply AI Engine button -->
+              <button id="applyAiEngine" class="mt-3 w-full neon-button py-1.5 px-3 text-white text-xs font-semibold rounded-lg">
+                Apply AI Engine
+              </button>
+            </div>
+          </div>
+
+          <!-- Real-Time Protection -->
+          <div class="text-right">
+            <p class="text-xs font-medium text-white/90">Real-Time Protection</p>
+            <p id="protectionStatus" class="text-[10px] font-medium text-emerald-400">Active</p>
+          </div>
+          
+          <div id="protectionToggle" class="toggle-switch toggle-switch-lg active"></div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <!-- Left Column -->
+        <div class="flex flex-col gap-3">
+          <!-- Upload Card -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <!-- Drop zone kept for drag & drop; clicking triggers pywebview file picker -->
+            <div id="dropZone" class="drop-zone rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-400/20 to-indigo-500/20 flex items-center justify-center mb-3">
+                <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+              </div>
+              <h2 class="text-sm font-semibold text-white mb-1">Add files to scan</h2>
+              <p class="text-xs text-slate-400">Click to browse via file dialog</p>
+            </div>
+          </div>
+
+          <!-- File Scan Queue -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-white">File Scan Queue</h3>
+              <div id="queueStats" class="flex items-center gap-2">
+                <span id="fileCount" class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-slate-300 border border-white/10">0 files</span>
+              </div>
+            </div>
+            
+            <div id="fileQueue" class="min-h-[120px] max-h-[180px] rounded-xl bg-slate-900/60 border border-slate-700/50 overflow-hidden">
+              <div id="emptyState" class="h-[120px] flex items-center justify-center p-4">
+                <div class="text-center">
+                  <div class="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                    </svg>
+                  </div>
+                  <p class="text-xs text-slate-400 font-medium">Drop files to begin scanning</p>
+                  <p class="text-[10px] text-slate-500 mt-1">Supports exe, dll, pdf and more</p>
+                </div>
+              </div>
+              <div id="fileList" class="hidden p-2 space-y-1.5 overflow-y-auto max-h-[172px] custom-scrollbar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Column -->
+        <div class="flex flex-col gap-3">
+          <!-- Online Scanning Card -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400/20 to-indigo-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-semibold text-white">Online Scanning</h3>
+            </div>
+            
+            <div class="space-y-2">
+              <div class="flex items-center justify-between py-1.5">
+                <p class="text-xs font-medium text-white/90">VirusTotal</p>
+                <div id="virusTotalToggle" class="toggle-switch active"></div>
+              </div>
+              <div class="h-px bg-white/5"></div>
+              <div class="flex items-center justify-between py-1.5">
+                <p class="text-xs font-medium text-white/90">Malware DB</p>
+                <div id="malwareDbToggle" class="toggle-switch active"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ML Static Detection Card -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400/20 to-teal-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M9 3v2H5v14h4v2H3V3h6zm6 0h6v18h-6v-2h4V5h-4V3zm-4 5h2v8h-2V8z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-semibold text-white">ML Static Detection</h3>
+            </div>
+            
+            <div class="space-y-2">
+              <div class="flex items-center justify-between py-1.5">
+                <p class="text-xs font-medium text-white/90">Custom</p>
+                <div id="customToggle" class="toggle-switch"></div>
+              </div>
+              <div class="h-px bg-white/5"></div>
+              <div class="flex items-center justify-between py-1.5">
+                <p class="text-xs font-medium text-white/90">Ember</p>
+                <div id="emberToggle" class="toggle-switch"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ML Dynamic Detection Card -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400/20 to-amber-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 3v2h-2V3h2zm4 4V5h-2v2h2zM7 5v2H5V5h2zm0 14v2H5v-2h2zm10 0v2h-2v-2h2zm0-10h2v6h-2V9zM5 9h2v6H5V9zm14 10V5h2v14h-2zM3 5v14H5V5H3zm6 4v6h6V9H9zm2 2h2v2h-2v-2z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-semibold text-white">ML Dynamic Detection</h3>
+            </div>
+            
+            <div class="space-y-2">
+              <div class="flex items-center justify-between py-1.5">
+                <p class="text-xs font-medium text-white/90">CIC2v</p>
+                <div id="cic2vToggle" class="toggle-switch"></div>
+              </div>
+              <div class="h-px bg-white/5"></div>
+              <div class="flex items-center justify-between py-1.5">
+                <p class="text-xs font-medium text-white/90">MALM</p>
+                <div id="malmToggle" class="toggle-switch"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="flex flex-col gap-3">
+          <!-- Scan Action Card -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+              <span id="scanStatus" class="text-xs font-medium text-slate-400">Add files to scan</span>
+              <span id="progressPercent" class="text-xs font-semibold gradient-text">0%</span>
+            </div>
+            
+            <div class="h-1.5 bg-white/5 rounded-full mb-4 overflow-hidden">
+              <div id="progressBar" class="progress-bar h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <!-- Current file scanning label -->
+            <div id="currentFileLabel" class="hidden mb-3 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
+              <p class="text-[10px] text-slate-400 mb-0.5">Scanning:</p>
+              <p id="currentFileName" class="text-xs text-sky-300 font-medium truncate"></p>
+            </div>
+
+            <!-- Scan summary -->
+            <div id="scanSummary" class="hidden mb-3 grid grid-cols-2 gap-2">
+              <div class="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <p id="cleanCount" class="text-sm font-bold text-emerald-400">0</p>
+                <p class="text-[10px] text-emerald-300/70">Clean</p>
+              </div>
+              <div class="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
+                <p id="threatCount" class="text-sm font-bold text-red-400">0</p>
+                <p class="text-[10px] text-red-300/70">Threats</p>
+              </div>
+            </div>
+            
+            <button id="scanBtn" disabled class="glow-button w-full py-3 px-4 text-white font-semibold rounded-xl flex items-center justify-center gap-2 text-sm">
+              <svg id="scanBtnIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span id="scanBtnText">Start Scan</span>
+            </button>
+          </div>
+
+          <!-- Scan log -->
+          <div class="glass-card rounded-2xl p-4 hover-lift">
+            <h3 class="text-sm font-semibold text-white mb-3">Activity Log</h3>
+            <div id="activityLog" class="space-y-1.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+              <p class="text-[10px] text-slate-500 italic">No activity yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-xs text-slate-500">
+      <p>SmartShield AI - Advanced Malware Protection</p>
+    </footer>
+  </div>
+
+  <script>
+    // ===================================================================
+    // PyWebView Bridge
+    // ===================================================================
+    let pywebviewReady = true;
+
+    document.addEventListener("pywebviewready", function () {
+      console.log("PyWebView Ready");
+      pywebviewReady = true;
+
+      // Update UI indicator
+      const dot = document.getElementById('pywebviewDot');
+      const label = document.getElementById('pywebviewLabel');
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      label.className = 'text-[10px] text-emerald-400';
+      label.textContent = 'Bridge Active';
+
+      showToast('PyWebView bridge connected', 'success');
+    });
+
+    // Fallback: if pywebview never fires (e.g. browser preview), mark disconnected
+    setTimeout(() => {
+      if (!pywebviewReady) {
+        const dot = document.getElementById('pywebviewDot');
+        const label = document.getElementById('pywebviewLabel');
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-red-400';
+        label.className = 'text-[10px] text-red-400';
+        label.textContent = 'No Bridge';
+      }
+    }, 3000);
+
+    // Safe API caller — wraps window.pywebview.api calls gracefully
+    async function callAPI(method, ...args) {
+      if (!pywebviewReady || !window.pywebview || !window.pywebview.api) {
+        console.warn(`PyWebView not ready — cannot call: ${method}`);
+        showToast('PyWebView bridge not connected', 'error');
+        return null;
+      }
+      try {
+        return await window.pywebview.api[method](...args);
+      } catch (err) {
+        console.error(`API error [${method}]:`, err);
+        showToast(`Error calling ${method}`, 'error');
+        return null;
+      }
+    }
+
+    // ===================================================================
+    // Toast
+    // ===================================================================
+    let toastTimer = null;
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.textContent = msg;
+
+      const colors = {
+        success: 'rgba(16,185,129,0.2)',
+        error:   'rgba(239,68,68,0.2)',
+        info:    'rgba(56,189,248,0.15)',
+      };
+      const borders = {
+        success: 'rgba(16,185,129,0.4)',
+        error:   'rgba(239,68,68,0.4)',
+        info:    'rgba(56,189,248,0.3)',
+      };
+      toast.style.background = `rgba(15,23,42,0.95)`;
+      toast.style.borderColor = borders[type] || borders.info;
+      toast.style.boxShadow = `0 0 20px ${colors[type] || colors.info}`;
+      toastMsg.style.color = type === 'error' ? '#f87171' : type === 'success' ? '#34d399' : '#38bdf8';
+
+      toast.classList.remove('hidden');
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    // ===================================================================
+    // Activity Log
+    // ===================================================================
+    function logActivity(msg, type = 'info') {
+      const log = document.getElementById('activityLog');
+      const colors = { success: 'text-emerald-400', error: 'text-red-400', info: 'text-sky-400', warn: 'text-amber-400' };
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const entry = document.createElement('div');
+      entry.className = 'flex items-start gap-2';
+      entry.innerHTML = `
+        <span class="text-[9px] text-slate-500 shrink-0 mt-0.5">${time}</span>
+        <p class="text-[10px] ${colors[type] || colors.info}">${msg}</p>
+      `;
+      // Remove placeholder
+      const placeholder = log.querySelector('p.italic');
+      if (placeholder) placeholder.remove();
+      log.prepend(entry);
+    }
+
+    // ===================================================================
+    // State
+    // ===================================================================
+    let files = [];          // { path: string, name: string, status: 'pending'|'scanning'|'malware'|'benign' }
+    let isScanning = false;
+    let progress = 0;
+    let inferenceMode = 'local';
+
+    // ===================================================================
+    // DOM References
+    // ===================================================================
+    const aiEngineBtn      = document.getElementById('aiEngineBtn');
+    const aiEnginePanel    = document.getElementById('aiEnginePanel');
+    const localOption      = document.getElementById('localOption');
+    const remoteOption     = document.getElementById('remoteOption');
+    const remoteSettings   = document.getElementById('remoteSettings');
+    const testConnectionBtn = document.getElementById('testConnectionBtn');
+    const applyAiEngineBtn = document.getElementById('applyAiEngine');
+    const connectionDot    = document.getElementById('connectionDot');
+    const connectionStatus = document.getElementById('connectionStatus');
+    const protectionToggle = document.getElementById('protectionToggle');
+    const protectionStatus = document.getElementById('protectionStatus');
+    const dropZone         = document.getElementById('dropZone');
+    const fileQueue        = document.getElementById('fileQueue');
+    const emptyState       = document.getElementById('emptyState');
+    const fileList         = document.getElementById('fileList');
+    const queueStats       = document.getElementById('queueStats');
+    const scanBtn          = document.getElementById('scanBtn');
+    const scanBtnText      = document.getElementById('scanBtnText');
+    const scanBtnIcon      = document.getElementById('scanBtnIcon');
+    const scanStatus       = document.getElementById('scanStatus');
+    const progressPercent  = document.getElementById('progressPercent');
+    const progressBar      = document.getElementById('progressBar');
+    const currentFileLabel = document.getElementById('currentFileLabel');
+    const currentFileName  = document.getElementById('currentFileName');
+    const scanSummary      = document.getElementById('scanSummary');
+    const cleanCount       = document.getElementById('cleanCount');
+    const threatCount      = document.getElementById('threatCount');
+
+    const toggleSwitches = {
+      virusTotal: document.getElementById('virusTotalToggle'),
+      malwareDb:  document.getElementById('malwareDbToggle'),
+      custom:     document.getElementById('customToggle'),
+      ember:      document.getElementById('emberToggle'),
+      cic2v:      document.getElementById('cic2vToggle'),
+      malm:       document.getElementById('malmToggle'),
+    };
+
+    // ===================================================================
+    // AI Engine Panel
+    // ===================================================================
+    aiEngineBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      aiEnginePanel.classList.toggle('hidden');
+      aiEngineBtn.classList.toggle('bg-gradient-to-br');
+      aiEngineBtn.classList.toggle('from-purple-500/30');
+      aiEngineBtn.classList.toggle('to-pink-500/30');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!aiEnginePanel.contains(e.target) && e.target !== aiEngineBtn) {
+        aiEnginePanel.classList.add('hidden');
+        aiEngineBtn.classList.remove('bg-gradient-to-br', 'from-purple-500/30', 'to-pink-500/30');
+      }
+    });
+
+    // Inference Mode Selection
+    localOption.addEventListener('click', () => {
+      inferenceMode = 'local';
+      updateInferenceUI();
+    });
+
+    remoteOption.addEventListener('click', () => {
+      inferenceMode = 'remote';
+      updateInferenceUI();
+    });
+
+    function updateInferenceUI() {
+      if (inferenceMode === 'local') {
+        localOption.className = 'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all bg-gradient-to-r from-purple-500/30 to-pink-500/20 border-2 border-purple-400/50 shadow-lg';
+        localOption.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.2)';
+        localOption.querySelector('div:nth-child(2)').className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/30';
+        localOption.querySelector('svg').className = 'w-4 h-4 text-purple-300';
+        localOption.querySelector('.text-sm').className = 'text-sm font-medium text-white';
+
+        remoteOption.className = 'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all bg-slate-800/80 border-2 border-slate-600/50 hover:bg-slate-700/80';
+        remoteOption.style.boxShadow = 'none';
+        remoteOption.querySelector('div:nth-child(2)').className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-slate-600/50';
+        remoteOption.querySelector('svg').className = 'w-4 h-4 text-slate-400';
+        remoteOption.querySelector('.text-sm').className = 'text-sm font-medium text-slate-300';
+
+        remoteSettings.classList.add('hidden');
+      } else {
+        remoteOption.className = 'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all bg-gradient-to-r from-purple-500/30 to-pink-500/20 border-2 border-purple-400/50 shadow-lg';
+        remoteOption.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.2)';
+        remoteOption.querySelector('div:nth-child(2)').className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/30';
+        remoteOption.querySelector('svg').className = 'w-4 h-4 text-purple-300';
+        remoteOption.querySelector('.text-sm').className = 'text-sm font-medium text-white';
+
+        localOption.className = 'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all bg-slate-800/80 border-2 border-slate-600/50 hover:bg-slate-700/80';
+        localOption.style.boxShadow = 'none';
+        localOption.querySelector('div:nth-child(2)').className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-slate-600/50';
+        localOption.querySelector('svg').className = 'w-4 h-4 text-slate-400';
+        localOption.querySelector('.text-sm').className = 'text-sm font-medium text-slate-300';
+
+        remoteSettings.classList.remove('hidden');
+      }
+    }
+
+    // Apply AI Engine → calls window.pywebview.api.AiEngine()
+    applyAiEngineBtn.addEventListener('click', async () => {
+      if (inferenceMode === 'local') {
+        logActivity('Applying AI Engine: Local mode', 'info');
+        const result = await callAPI('AiEngine', true, null);
+        if (result !== null) {
+          showToast('AI Engine: Local mode applied', 'success');
+          logActivity(`AI Engine response: ${result}`, 'success');
+        }
+      } else {
+        const api_url = document.getElementById('serverUrl').value.trim();
+        if (!api_url) { showToast('Enter a server URL first', 'error'); return; }
+        logActivity(`Applying AI Engine: Remote → ${api_url}`, 'info');
+        const result = await callAPI('AiEngine', false, api_url);
+        if (result !== null) {
+          showToast('AI Engine: Remote mode applied', 'success');
+          logActivity(`AI Engine response: ${result}`, 'success');
+        }
+      }
+      aiEnginePanel.classList.add('hidden');
+    });
+
+    // Test Connection (visual feedback only, no pywebview call needed here)
+    testConnectionBtn.addEventListener('click', () => {
+      const serverUrl = document.getElementById('serverUrl').value;
+      if (!serverUrl.trim()) {
+        connectionDot.className = 'w-1.5 h-1.5 rounded-full bg-red-400';
+        connectionStatus.className = 'text-[10px] text-red-400';
+        connectionStatus.textContent = 'Failed';
+        return;
+      }
+
+      connectionDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 status-dot';
+      connectionStatus.className = 'text-[10px] text-amber-400';
+      connectionStatus.textContent = 'Testing...';
+
+      // Actually call AiEngine to test remote connectivity
+      (async () => {
+        const result = await callAPI('AiEngine', false, serverUrl);
+        if (result && result.toLowerCase().includes('connected')) {
+          connectionDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+          connectionStatus.className = 'text-[10px] text-emerald-400';
+          connectionStatus.textContent = 'Connected';
+        } else {
+          connectionDot.className = 'w-1.5 h-1.5 rounded-full bg-red-400';
+          connectionStatus.className = 'text-[10px] text-red-400';
+          connectionStatus.textContent = result ? 'Checked' : 'Failed';
+        }
+      })();
+    });
+
+    // ===================================================================
+    // Real-Time Protection Toggle → window.pywebview.api.RealTimeProtection()
+    // ===================================================================
+    protectionToggle.addEventListener('click', async () => {
+      protectionToggle.classList.toggle('active');
+      const isEnabled = protectionToggle.classList.contains('active');
+
+      if (isEnabled) {
+        protectionStatus.className = 'text-[10px] font-medium text-emerald-400';
+        protectionStatus.textContent = 'Active';
+      } else {
+        protectionStatus.className = 'text-[10px] font-medium text-slate-500';
+        protectionStatus.textContent = 'Disabled';
+      }
+
+      logActivity(`Real-time protection ${isEnabled ? 'enabled' : 'disabled'}`, isEnabled ? 'success' : 'warn');
+      const result = await callAPI('RealTimeProtection', isEnabled);
+      if (result !== null) {
+        showToast(result, isEnabled ? 'success' : 'info');
+      }
+    });
+
+    // ===================================================================
+    // ML Dynamic Detection Toggles → window.pywebview.api.onChangeBtn()
+    // ===================================================================
+    function sendMLDynamicState() {
+      const CIC2v = toggleSwitches.cic2v.classList.contains('active');
+      const MALm  = toggleSwitches.malm.classList.contains('active');
+      logActivity(`ML Dynamic — CIC2v:${CIC2v}, MALM:${MALm}`, 'info');
+      callAPI('onChangeBtn', CIC2v, MALm);
+    }
+
+    toggleSwitches.cic2v.addEventListener('click', () => {
+      toggleSwitches.cic2v.classList.toggle('active');
+      sendMLDynamicState();
+    });
+
+    toggleSwitches.malm.addEventListener('click', () => {
+      toggleSwitches.malm.classList.toggle('active');
+      sendMLDynamicState();
+    });
+
+    // Generic toggle for static/online switches (no API call needed, read at scan time)
+    [toggleSwitches.virusTotal, toggleSwitches.malwareDb, toggleSwitches.custom, toggleSwitches.ember].forEach(t => {
+      t.addEventListener('click', () => { t.classList.toggle('active'); });
+    });
+
+    // ===================================================================
+    // File Selection → window.pywebview.api.select_files()
+    // ===================================================================
+    dropZone.addEventListener('click', async () => {
+      logActivity('Opening file picker…', 'info');
+      const selected = await callAPI('select_files');
+      if (!selected || selected.length === 0) {
+        logActivity('No files selected.', 'warn');
+        return;
+      }
+      addFilesByPath(selected);
+    });
+
+    // Drag & drop still supported (files added by path via dataTransfer)
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+      dropZone.style.background  = 'rgba(56, 189, 248, 0.05)';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = '';
+      dropZone.style.background  = '';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '';
+      dropZone.style.background  = '';
+      // In pywebview, DataTransfer may give real paths on desktop
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      droppedFiles.forEach(f => {
+        // f.path is available in Electron/pywebview desktop contexts
+        const filePath = f.path || f.name;
+        addFilesByPath([filePath]);
+      });
+    });
+
+    function addFilesByPath(paths) {
+      let added = 0;
+      paths.forEach(p => {
+        // Avoid duplicates
+        if (files.find(f => f.path === p)) return;
+        const name = p.split(/[\\/]/).pop();
+        files.push({ path: p, name, status: 'pending' });
+        added++;
+      });
+      if (added > 0) logActivity(`Added ${added} file(s) to queue.`, 'info');
+      updateFileQueue();
+      updateScanButton();
+    }
+
+    function removeFile(index) {
+      const removed = files.splice(index, 1);
+      if (removed.length) logActivity(`Removed: ${removed[0].name}`, 'warn');
+      updateFileQueue();
+      updateScanButton();
+    }
+
+    // ===================================================================
+    // UI helpers
+    // ===================================================================
+    function getStatusColor(status) {
+      switch (status) {
+        case 'benign':   return 'border-emerald-500/50 bg-emerald-500/10';
+        case 'malware':  return 'border-red-500/50 bg-red-500/10';
+        case 'scanning': return 'border-amber-500/50 bg-amber-500/10';
+        default:         return 'border-slate-500/30 bg-white/5';
+      }
+    }
+
+    function getStatusIcon(status) {
+      switch (status) {
+        case 'benign':
+          return '<svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+        case 'malware':
+          return '<svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+        case 'scanning':
+          return '<svg class="w-4 h-4 text-amber-400 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>';
+        default:
+          return '<svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>';
+      }
+    }
+
+    function getStatusText(status) {
+      switch (status) {
+        case 'benign':   return '<span class="text-emerald-400">Safe</span>';
+        case 'malware':  return '<span class="text-red-400">Threat</span>';
+        case 'scanning': return '<span class="text-amber-400">Scanning...</span>';
+        default:         return '<span class="text-slate-400">Pending</span>';
+      }
+    }
+
+    function updateFileQueue() {
+      const malwareCount = files.filter(f => f.status === 'malware').length;
+      const benignCount  = files.filter(f => f.status === 'benign').length;
+
+      let statsHtml = '';
+      if (malwareCount > 0) statsHtml += `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">${malwareCount} threat${malwareCount !== 1 ? 's' : ''}</span>`;
+      if (benignCount > 0)  statsHtml += `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${benignCount} safe</span>`;
+      statsHtml += `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-slate-300 border border-white/10">${files.length} file${files.length !== 1 ? 's' : ''}</span>`;
+      queueStats.innerHTML = statsHtml;
+
+      if (files.length === 0) {
+        emptyState.classList.remove('hidden');
+        fileList.classList.add('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        fileList.classList.remove('hidden');
+        fileList.innerHTML = files.map((item, index) => `
+          <div class="file-item flex items-center gap-3 p-2.5 rounded-lg border transition-all ${getStatusColor(item.status)}">
+            <div class="shrink-0">${getStatusIcon(item.status)}</div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-white font-medium truncate" title="${item.path}">${item.name}</p>
+              <div class="flex items-center gap-2">
+                <p class="text-[10px] text-slate-400 truncate max-w-[120px]" title="${item.path}">${item.path}</p>
+                <span class="text-[10px]">${getStatusText(item.status)}</span>
+              </div>
+            </div>
+            <button onclick="removeFile(${index})" class="remove-btn p-1.5 hover:bg-white/10 rounded-lg transition-all" ${isScanning ? 'disabled' : ''}>
+              <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function updateScanButton() {
+      const canScan = files.length > 0 && !isScanning;
+      scanBtn.disabled = !canScan;
+
+      if (isScanning) {
+        scanBtnText.textContent = 'Scanning...';
+        scanBtnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>';
+        scanBtnIcon.setAttribute('fill', 'none');
+        scanBtnIcon.setAttribute('stroke', 'currentColor');
+        scanBtnIcon.setAttribute('stroke-width', '2');
+        scanBtnIcon.className = 'w-4 h-4 animate-spin';
+      } else {
+        scanBtnText.textContent = files.length > 0 ? 'Start Scan' : 'Start Scan';
+        scanBtnIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        scanBtnIcon.setAttribute('fill', 'currentColor');
+        scanBtnIcon.removeAttribute('stroke');
+        scanBtnIcon.className = 'w-4 h-4';
+      }
+
+      if (isScanning) {
+        scanStatus.textContent = 'Scanning…';
+      } else if (files.length > 0) {
+        scanStatus.textContent = 'Ready to Scan';
+      } else {
+        scanStatus.textContent = 'Add files to scan';
+      }
+    }
+
+    function updateProgress(value) {
+      progress = Math.min(100, Math.round(value));
+      progressPercent.textContent = progress + '%';
+      progressBar.style.width = progress + '%';
+    }
+
+    // ===================================================================
+    // Start Scan → window.pywebview.api.start_scan() + fileScanner()
+    // ===================================================================
+    scanBtn.addEventListener('click', async () => {
+      if (files.length === 0 || isScanning) return;
+
+      // Read toggle states
+      const vt    = toggleSwitches.virusTotal.classList.contains('active');
+      const mb    = toggleSwitches.malwareDb.classList.contains('active');
+      const cust  = toggleSwitches.custom.classList.contains('active');
+      const ember = toggleSwitches.ember.classList.contains('active');
+
+      logActivity(`Scan started — VT:${vt} MB:${mb} Custom:${cust} Ember:${ember}`, 'info');
+
+      // Call start_scan to configure the backend engines
+      await callAPI('start_scan', vt, mb, cust, ember);
+
+      isScanning = true;
+      updateProgress(0);
+      updateScanButton();
+      scanSummary.classList.add('hidden');
+      currentFileLabel.classList.remove('hidden');
+
+      // Reset all files to pending/scanning state
+      files = files.map(f => ({ ...f, status: 'pending' }));
+      updateFileQueue();
+
+      let cleanTotal = 0;
+      let threatTotal = 0;
+      const totalFiles = files.length;
+
+      for (let i = 0; i < totalFiles; i++) {
+        // Mark current file as scanning
+        files[i].status = 'scanning';
+        currentFileName.textContent = files[i].name;
+        updateFileQueue();
+
+        logActivity(`Scanning: ${files[i].name}`, 'info');
+
+        // Call fileScanner with the file path
+        const result = await callAPI('fileScanner', { path: files[i].path });
+
+        if (result === 'Malicious') {
+          files[i].status = 'malware';
+          threatTotal++;
+          logActivity(`⚠ Threat detected: ${files[i].name}`, 'error');
+          showToast(`Threat: ${files[i].name}`, 'error');
+        } else if (result === 'Clean') {
+          files[i].status = 'benign';
+          cleanTotal++;
+          logActivity(`✓ Clean: ${files[i].name}`, 'success');
+        } else {
+          // pywebview not available or error — fallback visual only
+          files[i].status = 'benign';
+          cleanTotal++;
+          logActivity(`? Result unknown for: ${files[i].name}`, 'warn');
+        }
+
+        updateFileQueue();
+        updateProgress(((i + 1) / totalFiles) * 100);
+      }
+
+      // Done
+      isScanning = false;
+      currentFileLabel.classList.add('hidden');
+      cleanCount.textContent = cleanTotal;
+      threatCount.textContent = threatTotal;
+      scanSummary.classList.remove('hidden');
+      updateScanButton();
+      logActivity(`Scan complete. ${cleanTotal} clean, ${threatTotal} threat(s).`, threatTotal > 0 ? 'error' : 'success');
+      showToast(`Scan complete — ${cleanTotal} clean, ${threatTotal} threat(s)`, threatTotal > 0 ? 'error' : 'success');
+    });
+
+    // ===================================================================
+    // Initialize
+    // ===================================================================
+    updateFileQueue();
+    updateScanButton();
+  </script>
+</body>
+</html>

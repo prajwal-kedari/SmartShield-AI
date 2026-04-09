@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartShield AI - URL Detection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+    }
+
+    .backdrop.show {
+      opacity: 1;
+    }
+
+    /* .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 90%;
+      max-width: 450px;
+      background: linear-gradient(145deg, rgba(30, 30, 60, 0.9), rgba(20, 20, 45, 0.95));
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(245, 158, 11, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 101;
+      overflow: hidden;
+    } */
+    .popup {
+  position: fixed;
+  inset: 0;   /* 🔥 FULL SCREEN (top:0, left:0, right:0, bottom:0) */
+  width: 100vw;
+  height: 100vh;
+
+  border-radius: 0;   /* remove rounded corners */
+  max-width: none;
+
+  transform: none;    /* ❌ remove translate/scale */
+  opacity: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2b 100%);
+  z-index: 9999;
+
+  transition: none; /* instant show */
+}
+    .popup.show {
+      opacity: 1;
+      /* transform: translate(-50%, -50%) scale(1); */
+    }
+
+    .popup-header {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .header-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+
+    .header-text h2 {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .popup-body {
+      padding: 20px;
+    }
+
+    .url-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .url-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(245, 158, 11, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .url-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #f59e0b;
+    }
+
+    .url-text {
+      color: #f59e0b;
+      font-size: 14px;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .risk-level {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .risk-level.high {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .risk-level.medium {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .risk-level.low {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .risk-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .risk-value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .risk-level.high .risk-value { color: #ef4444; }
+    .risk-level.medium .risk-value { color: #f59e0b; }
+    .risk-level.low .risk-value { color: #22c55e; }
+
+    .analysis-title {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .stat-box:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+    }
+
+    .stat-box.danger .stat-value { color: #ef4444; }
+    .stat-box.warning .stat-value { color: #f59e0b; }
+    .stat-box.info .stat-value { color: #94a3b8; }
+    .stat-box.success .stat-value { color: #22c55e; }
+    .stat-box.muted .stat-value { color: #64748b; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .popup-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop show" id="backdrop"></div>
+  
+  <div class="popup show" id="popup">
+    <div class="popup-header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+      </div>
+      <div class="header-text">
+        <h2>Suspicious Link Detection</h2>
+        <p>SmartShield AI URL Analysis</p>
+      </div>
+    </div>
+
+    <div class="popup-body">
+      <div class="url-box">
+        <div class="url-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <span class="url-text" id="urlText">win-prize-now.com</span>
+      </div>
+
+      <div class="risk-level medium" id="riskBox">
+        <span class="risk-label">Risk Level:</span>
+        <span class="risk-value" id="riskValue">MEDIUM</span>
+      </div>
+
+      <div class="analysis-title">VirusTotal Analysis</div>
+
+      <div class="stats-grid">
+        <div class="stat-box danger">
+          <div class="stat-value" id="maliciousCount">3</div>
+          <div class="stat-label">Malicious</div>
+        </div>
+        <div class="stat-box warning">
+          <div class="stat-value" id="suspiciousCount">2</div>
+          <div class="stat-label">Suspicious</div>
+        </div>
+        <div class="stat-box info">
+          <div class="stat-value" id="undetectedCount">31</div>
+          <div class="stat-label">Undetected</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box success">
+          <div class="stat-value" id="harmlessCount">58</div>
+          <div class="stat-label">Harmless</div>
+        </div>
+        <div class="stat-box muted">
+          <div class="stat-value" id="timeoutCount">0</div>
+          <div class="stat-label">Timeout</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <button class="btn btn-primary" onclick="blockUrl()">Block URL</button>
+      <button class="btn btn-secondary" onclick="hide()">Ignore</button>
+    </div>
+  </div>
+
+  <script>
+    function setUrlThreat(data) {
+      document.getElementById('urlText').textContent = data.url || 'Unknown URL';
+      document.getElementById('maliciousCount').textContent = data.malicious || 0;
+      document.getElementById('suspiciousCount').textContent = data.suspicious || 0;
+      document.getElementById('undetectedCount').textContent = data.undetected || 0;
+      document.getElementById('harmlessCount').textContent = data.harmless || 0;
+      document.getElementById('timeoutCount').textContent = data.timeout || 0;
+
+      // Risk level
+      const riskBox = document.getElementById('riskBox');
+      const riskValue = document.getElementById('riskValue');
+      const risk = (data.risk || 'Medium').toLowerCase();
+      
+      riskBox.className = 'risk-level ' + risk;
+      riskValue.textContent = (data.risk || 'Medium').toUpperCase();
+    }
+
+    function show() {
+      document.getElementById('backdrop').classList.add('show');
+      document.getElementById('popup').classList.add('show');
+    }
+
+    function hide() {
+      document.getElementById('backdrop').classList.remove('show');
+      document.getElementById('popup').classList.remove('show');
+    }
+
+    function blockUrl() {
+      alert('URL has been blocked!');
+      hide();
+    }
+
+    window.addEventListener('pywebviewready', async () => {
+    const data = await window.pywebview.api.Send_Data();
+    setUrlThreat(data);
+    show();});
+
+
+  </script>
+</body>
+</html>

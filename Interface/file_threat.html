@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartShield AI - Threat Detection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+    }
+
+    .backdrop.show {
+      opacity: 1;
+    }
+/* 
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 90%;
+      max-width: 480px;
+      background: linear-gradient(145deg, rgba(30, 30, 60, 0.9), rgba(20, 20, 45, 0.95));
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(239, 68, 68, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 101;
+      overflow: hidden;
+    } */
+.popup {
+  position: fixed;
+  inset: 0;   /* 🔥 FULL SCREEN (top:0, left:0, right:0, bottom:0) */
+  width: 100vw;
+  height: 100vh;
+
+  border-radius: 0;   /* remove rounded corners */
+  max-width: none;
+
+  transform: none;    /* ❌ remove translate/scale */
+  opacity: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2b 100%);
+  z-index: 9999;
+
+  transition: none; /* instant show */
+}
+    .popup.show {
+      opacity: 1;
+      /* transform: translate(-50%, -50%) scale(1); */
+    }
+
+    .popup-header {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .header-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+
+    .header-text h2 {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .popup-body {
+      padding: 20px;
+    }
+
+    .file-info {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .file-name {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .file-path {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 11px;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .scan-results {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .result-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .result-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .result-icon.danger {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .result-icon.danger svg {
+      fill: #ef4444;
+    }
+
+    .result-icon.warning {
+      background: rgba(245, 158, 11, 0.15);
+    }
+
+    .result-icon.warning svg {
+      fill: #f59e0b;
+    }
+
+    .result-icon.success {
+      background: rgba(34, 197, 94, 0.15);
+    }
+
+    .result-icon.success svg {
+      fill: #22c55e;
+    }
+
+    .result-icon.info {
+      background: rgba(59, 130, 246, 0.15);
+    }
+
+    .result-icon.info svg {
+      fill: #3b82f6;
+    }
+
+    .result-name {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+    }
+
+    .result-value {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge.danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge.success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge.warning {
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge.info {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .score {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .family-tag {
+      color: #ef4444;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .probability-bar {
+      margin-top: 16px;
+      padding: 14px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .prob-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .prob-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+    }
+
+    .prob-value {
+      color: #ef4444;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .bar-container {
+      height: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .popup-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop show" id="backdrop"></div>
+  
+  <div class="popup show" id="popup">
+    <div class="popup-header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="header-text">
+        <h2>Threat Detection Summary</h2>
+        <p>SmartShield AI Security Analysis</p>
+      </div>
+    </div>
+
+    <div class="popup-body">
+      <div class="file-info">
+        <div class="file-name" id="fileName">Bitmap2_GDIOnly.exe</div>
+        <div class="file-path" id="filePath">D:/Project/Final Project/</div>
+      </div>
+
+      <div class="scan-results">
+        <div class="result-row">
+          <div class="result-label">
+            <div class="result-icon danger">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            </div>
+            <span class="result-name">VirusTotal</span>
+          </div>
+          <div class="result-value">
+            <span class="badge danger" id="vtBadge">DETECTED</span>
+            <span class="score" id="vtScore">57/72</span>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-label">
+            <div class="result-icon danger">
+              <svg viewBox="0 0 24 24"><path d="M19.78 2.2L24 6.42 8.44 22 0 22l8.44-8.44L19.78 2.2zM15.33 6.65l2.02 2.02-8.44 8.44-2.02-2.02 8.44-8.44z"/></svg>
+            </div>
+            <span class="result-name">Malware Database</span>
+          </div>
+          <div class="result-value">
+            <span class="badge danger" id="mbBadge">MATCH</span>
+            <span class="family-tag" id="malwareFamily">Ransomware</span>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-label">
+            <div class="result-icon warning">
+              <svg viewBox="0 0 24 24"><path d="M12 2l9 19H3L12 2zm0 6v6h.01L12 8zm0 8v2h.01L12 16z"/></svg>
+            </div>
+            <span class="result-name">Custom Signature</span>
+          </div>
+          <div class="result-value">
+            <span class="badge warning" id="custBadge">1 MATCH</span>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-label">
+            <div class="result-icon success" id="emberIcon">
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+            <span class="result-name">EMBER Analysis</span>
+          </div>
+          <div class="result-value">
+            <span class="badge success" id="emberBadge">CLEAN</span>
+            <span class="score" id="emberScore">0.180</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="probability-bar">
+        <div class="prob-header">
+          <span class="prob-label">Threat Probability</span>
+          <span class="prob-value" id="probValue">85%</span>
+        </div>
+        <div class="bar-container">
+          <div class="bar-fill" id="probBar" style="width: 85%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <button class="btn btn-primary" onclick="quarantine()">Quarantine</button>
+      <button class="btn btn-secondary" onclick="hide()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function setFileThreat(data) {
+      document.getElementById('fileName').textContent = data.fileName || 'Unknown';
+      document.getElementById('filePath').textContent = data.filePath || 'Unknown path';
+      
+      // VirusTotal
+      const vtBadge = document.getElementById('vtBadge');
+      const vtScore = document.getElementById('vtScore');
+      if (data.vt) {
+        vtBadge.textContent = 'DETECTED';
+        vtBadge.className = 'badge danger';
+      } else {
+        vtBadge.textContent = 'CLEAN';
+        vtBadge.className = 'badge success';
+      }
+      vtScore.textContent = data.vtScore || '0/0';
+
+      // Malware Database
+      const mbBadge = document.getElementById('mbBadge');
+      const malwareFamily = document.getElementById('malwareFamily');
+      if (data.malwareDb) {
+        mbBadge.textContent = 'MATCH';
+        mbBadge.className = 'badge danger';
+        malwareFamily.textContent = data.family || 'Unknown';
+        malwareFamily.style.display = 'inline';
+      } else {
+        mbBadge.textContent = 'NO MATCH';
+        mbBadge.className = 'badge success';
+        malwareFamily.style.display = 'none';
+      }
+
+      // Custom Signature
+      const custBadge = document.getElementById('custBadge');
+      if (data.custom ) {
+        custBadge.textContent = "Detected";
+        custBadge.className = 'badge danger';
+      } else {
+        custBadge.textContent = 'Safe';
+        custBadge.className = 'badge success';
+      }
+
+      // EMBER
+      const emberBadge = document.getElementById('emberBadge');
+      const emberScore = document.getElementById('emberScore');
+      const emberIcon = document.getElementById('emberIcon');
+      if (data.ember) {
+        emberBadge.textContent = 'SUSPICIOUS';
+        emberBadge.className = 'badge danger';
+        emberIcon.className = 'result-icon danger';
+      } else {
+        emberBadge.textContent = 'CLEAN';
+        emberBadge.className = 'badge success';
+        emberIcon.className = 'result-icon success';
+      }
+      emberScore.textContent = (data.emberScore || 0).toFixed(3);
+
+      // Probability
+      const prob = data.prob || 0;
+      document.getElementById('probValue').textContent = prob + '%';
+      document.getElementById('probBar').style.width = prob + '%';
+    }
+
+    function show() {
+      document.getElementById('backdrop').classList.add('show');
+      document.getElementById('popup').classList.add('show');
+    }
+
+    function hide() {
+      document.getElementById('backdrop').classList.remove('show');
+      document.getElementById('popup').classList.remove('show');
+    }
+
+    function quarantine() {
+      alert('File quarantined successfully!');
+      hide();
+    }
+
+    // Initialize with default data
+    // setFileThreat({
+    //   fileName: "Bitmap2_GDIOnly.exe",
+    //   filePath: "D:/Project/Final Project/",
+    //   vt: true,
+    //   vtScore: "57/72",
+    //   malwareDb: true,
+    //   family: "Ransomware",
+    //   custom: 1,
+    //   ember: false,
+    //   emberScore: 0.180,
+    //   prob: 85
+    // });
+
+    window.addEventListener('pywebviewready', async () => {
+    const data = await window.pywebview.api.Send_Data();
+    setFileThreat(data);
+    show();});
+
+
+
+
+
+  </script>
+</body>
+</html>
