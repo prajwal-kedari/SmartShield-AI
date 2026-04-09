@@ -1,6 +1,9 @@
-import requests
+import base64
+import json
 
-API_KEY = "e3d85a9fe98800a129b860f1ad4e3c1e55f17e2ff144f11cd0445698620d6aa8"  # replace with your VT API key
+import requests
+D =json.load(open("SaveControl.json"))
+API_KEY = D["Vt_api"]  # replace with your VT API key
 BASE_URL = "https://www.virustotal.com/api/v3/files/{}"
 
 def vt_check_hash(sha256_hash):
@@ -25,7 +28,8 @@ def check_hash_malwarebazaar(sha256_hash):
     url = "https://mb-api.abuse.ch/api/v1/"
     headers = {
         "User-Agent": "MalwareLookupScript/1.0",
-        "Auth-Key": "3ecc340fb3c81821ab1ad11680f7a4198da1e3393698072f"
+        # "Auth-Key": "3ecc340fb3c81821ab1ad11680f7a4198da1e3393698072f"
+        "Auth-Key": D["mal_api"]
     }
     payload = {
         "query": "get_info",
@@ -55,6 +59,34 @@ def check_hash_malwarebazaar(sha256_hash):
     except Exception as e:
         print(f"[!] Error: {e}")
 
+
+
+def vt_check_url(url):
+    BASE_URL = "https://www.virustotal.com/api/v3/urls/{}"
+
+    headers = {"x-apikey": API_KEY}
+    # VirusTotal requires URL encoded in base64 (no = padding)
+    url_id = base64.urlsafe_b64encode(url.encode()).decode().strip("=")
+
+    vt_url = BASE_URL.format(url_id)
+
+    r = requests.get(vt_url, headers=headers)
+
+    if r.status_code == 200:
+        vt_data = r.json()
+        print(vt_data)
+        stats = vt_data["data"]["attributes"]["last_analysis_stats"]
+
+        print(f"\nURL: {url}")
+        print("VirusTotal analysis:", stats)
+
+        return True, stats["malicious"]
+
+    elif r.status_code == 404:
+        return False, None  # not found
+
+    else:
+        raise Exception(f"VT error {r.status_code}: {r.text}")
 
 
 # check_hash_malwarebazaar("0f81bee03e15e394a587be71726b59670b8482ddb4c9aa87b91cce1cf8a40d17")
