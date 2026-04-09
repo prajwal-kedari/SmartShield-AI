@@ -5,7 +5,11 @@
 #   python process_monitor.py
 #
 # Ctrl+C to stop cleanly.
+print("Starting Process Monitor...")
+import datetime
 
+import requests, base64
+import joblib, json
 import queue
 import time
 import signal
@@ -15,10 +19,15 @@ import joblib
 import numpy as np
 from collections import defaultdict
 
-from SysMon_reader   import SysmonReader
-from feature_builder import EventWindow, FEATURE_NAMES
-from alert  import AlertHandler
-
+# from static import cloud_based as cloud
+from static.main import static_checker
+from dynamic.SysMon_reader   import SysmonReader
+from dynamic.feature_builder import EventWindow, FEATURE_NAMES
+from dynamic.alert           import AlertHandler
+# from SysMon_reader   import SysmonReader
+# from feature_builder import EventWindow, FEATURE_NAMES
+# from alert           import AlertHandler
+import pop_ui
 # ── Config ────────────────────────────────────────────────────────────────────
 MODEL_PATH   = "dynamic/Model/smartshield_Dynamic.pkl"
 META_PATH    = "dynamic/DataSet/model_meta.json"
@@ -34,11 +43,78 @@ EXEMPT_PIDS = {0, 4}      # System Idle + System
 QUEUE_MAXSIZE = 2000
 
 # ── Static PE model (Gate 1) ──────────────────────────────────────────────────
-# If you have your existing static model, load it here.
-# Otherwise set STATIC_MODEL = None to skip Gate 1.
-STATIC_MODEL_PATH = "static/model.pkl"          # adjust if needed
+STATIC_MODEL_PATH = "static/model.pkl"
 STATIC_FEATURES   = "static/feature_names.json"
 
+D =json.load(open("SaveControl.json"))
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  FEATURE TOGGLE FLAGS  —  set True/False to enable or disable each stage   ║
+# ╠══════════════════════════════════════════════════════════════════════════════╣
+ENABLE_FUNC_A = D["RlFileScan"]    # FuncA : called whenever a new .exe file is created on disk
+ENABLE_FUNC_B = D["WebSpam"]   # FuncB : called whenever any URL / link is opened (DNS + Net)
+ENABLE_GATE_1 = D["gate1"]   # Gate 1: static PE model scan on ProcessCreate
+ENABLE_GATE_2 = D["gate2"]    # Gate 2: behavioral model score after 30-second window
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+def vt_check_url(url):
+    BASE_URL = "https://www.virustotal.com/api/v3/urls/{}"
+
+    headers = {"x-apikey": D["Vt_api"]}
+    # VirusTotal requires URL encoded in base64 (no = padding)
+    url_id = base64.urlsafe_b64encode(url.encode()).decode().strip("=")
+
+    vt_url = BASE_URL.format(url_id)
+
+    r = requests.get(vt_url, headers=headers)
+
+    if r.status_code == 200:
+        vt_data = r.json()
+        # print(vt_data)
+        stats = vt_data["data"]["attributes"]["last_analysis_stats"]
+
+        print(f"\nURL: {url}")
+        print("VirusTotal analysis:", stats)
+
+        return bool(stats["malicious"] or stats["suspicious"]), stats
+
+    elif r.status_code == 404:
+        return False, None  # not found
+
+    else:
+        raise Exception(f"VT error {r.status_code}: {r.text}")
+
+
+
+
+# ── FuncA — triggered on every new .exe written to disk (FileCreate, EID 11) ──
+def FuncA(pid: int, exe_path: str):
+    """
+    Called when a process writes a new .exe file to disk.
+    Add your custom logic here (e.g. quarantine, hash lookup, sandbox submission).
+
+    Args:
+        pid      : PID of the process that created the file
+        exe_path : full path of the newly created .exe
+    """
+    print(f"[FuncA] New .exe created  PID={pid:<6}  path={exe_path}")
+
+
+# ── FuncB — triggered on every URL / link open (DNS query or outbound connect) ─
+def FuncB(pid: int, url_or_ip: str, event_name: str):
+    """
+    Called when any process opens a URL or makes a network connection.
+    Add your custom logic here (e.g. reputation lookup, proxy redirect, block).
+
+    Args:
+        pid        : PID of the process making the request
+        url_or_ip  : domain (from DNS query) or destination IP (from NetworkConnect)
+        event_name : 'DnsQuery' or 'NetworkConnect'
+    """
+    print(f"[FuncB] Link opened  PID={pid:<6}  [{event_name}]  target={url_or_ip}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 def _load_static():
     try:
@@ -58,10 +134,9 @@ def _static_score(model, feature_names: list, exe_path: str) -> float:
     """
     try:
         import pefile
-        import numpy as np
-        pe   = pefile.PE(exe_path, fast_load=True)
-        oh   = pe.OPTIONAL_HEADER
-        fh   = pe.FILE_HEADER
+        pe  = pefile.PE(exe_path, fast_load=True)
+        oh  = pe.OPTIONAL_HEADER
+        fh  = pe.FILE_HEADER
 
         raw = {
             "MajorLinkerVersion":           oh.MajorLinkerVersion,
@@ -83,7 +158,6 @@ def _static_score(model, feature_names: list, exe_path: str) -> float:
             "CheckSum":                     oh.CheckSum,
         }
 
-        # Section stats
         entropies = [s.get_entropy() for s in pe.sections]
         vsizes    = [s.Misc_VirtualSize for s in pe.sections]
         raw["SectionMinEntropy"]      = min(entropies) if entropies else 0
@@ -92,7 +166,6 @@ def _static_score(model, feature_names: list, exe_path: str) -> float:
             (s.Characteristics for s in pe.sections), default=0
         )
 
-        # Import / export directory sizes
         try:
             raw["DirectoryEntryImportSize"] = len(pe.DIRECTORY_ENTRY_IMPORT)
         except Exception:
@@ -108,7 +181,7 @@ def _static_score(model, feature_names: list, exe_path: str) -> float:
         return float(model.predict_proba(vec)[0][1])
 
     except Exception:
-        return 0.0   # can't parse → don't block
+        return 0.0
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -123,7 +196,7 @@ class ProcessMonitor:
               f"best_iter={meta['best_iteration']}  "
               f"test_auc={meta['test_auc']:.4f}")
 
-        # Load static model (optional)
+        # Load static model (used by Gate 1)
         self.static_model, self.static_features = _load_static()
 
         # Alert handler
@@ -144,6 +217,9 @@ class ProcessMonitor:
     # ── Gate 1: static PE scan on first ProcessCreate ────────────────────────
     def _gate1(self, pid: int, exe_path: str) -> bool:
         """Returns True if the static model says this file is malware."""
+        if not ENABLE_GATE_1:
+            return False
+        print(exe_path)
         if self.static_model is None or not exe_path:
             return False
         prob = _static_score(self.static_model, self.static_features, exe_path)
@@ -161,11 +237,14 @@ class ProcessMonitor:
 
     # ── Gate 2: behavioral score after 30s window ────────────────────────────
     def _gate2(self, pid: int, window: EventWindow):
+        if not ENABLE_GATE_2:
+            window.reset_timer()
+            return
+
         vec  = window.to_feature_vector()
         prob = float(self.model.predict_proba([vec])[0][1])
 
         if prob >= THRESH_BLOCK:
-            # Build a readable dict of non-zero features for the alert
             top = {
                 FEATURE_NAMES[i]: round(v, 3)
                 for i, v in enumerate(vec)
@@ -178,25 +257,92 @@ class ProcessMonitor:
                 gate     = "behavioral",
                 features = top,
             )
+            data ={
+            "time": datetime.datetime.now().isoformat(timespec="seconds"),
+            "pid": pid,
+            "path": window.image_path,
+            "prob": prob,
+            "threshold":0.55
+            }
+            pop_ui.live_behaviour_ui(data)
             self.flagged.add(pid)
 
         elif prob >= THRESH_WATCHLIST:
             print(f"[WATCHLIST] PID {pid:<6} {window.image_path}  "
                   f"p={prob:.3f}  — monitoring continues")
 
-        else:
-            pass   # clean; no output to avoid log spam
+        window.reset_timer()
 
-        window.reset_timer()   # slide the window forward
+    # ── Dispatch hooks based on event type ───────────────────────────────────
+    def _dispatch_hooks(self, ev: dict):
+        """
+        Inspect every incoming event and trigger FuncA / FuncB where relevant.
+        Called for every event before it is fed to the behavioral window.
+        """
+        eid  = ev["eid"]
+        pid  = ev["pid"]
+        data = ev["data"]
+
+        # ── FuncA: new .exe written to disk (FileCreate, EID 11) ─────────────
+        if ENABLE_FUNC_A and eid == 11:
+            target = data.get("TargetFilename", "")
+            if target.lower().endswith(".exe"):
+                pred_value=static_checker(target,D["ui_Vt"],D["ui_Mal"],D["ui_cus"],D["ui_ember"])
+                data={ "fileName": target.split("\\")[-1],
+                        "filePath": target,
+                        "vt": "true" if pred_value.get("vt",[0,0])[1] else "false",
+                        "vtScore": "75/{}".format(pred_value.get("vt",[0,0])[0],pred_value.get("vt",[0,0])[1]),
+                        "malwareDb": 1 if pred_value.get("mb",[0,0])[0] else 0,
+                        "family": "{}".format(pred_value.get("mb",[0,0])[1]) if pred_value.get("mb",[0,0])[0] else "None",
+                        "custom": 1 if pred_value.get("cust",[0,0])[0] else 0,
+                        "ember": 1 if pred_value.get("ember",[0,0])[0] else 0,
+                        "emberScore": float(pred_value.get("ember",[0,0])[1]) if pred_value.get("ember",[0,0])[0] else 0.0,
+                        "prob": "{}".format(round(pred_value.get("ember",[0,0])[1]*100,2)) if pred_value.get("ember",[0,0])[0] else "0"
+                    }
+                print(data)
+                pop_ui.file_threat_ui(data)
+                # FuncA(pid, target)
+
+        # ── FuncB: any DNS query (EID 22) ────────────────────────────────────
+        if ENABLE_FUNC_B and eid == 22:
+            domain = data.get("QueryName", "")
+            print("================>",domain)
+            if domain:
+                mal ,vtdata = vt_check_url(domain)
+                print(mal,vtdata)
+                if mal:
+                    print(vtdata)
+                    # vtdata = {"VirusTotal analysis": {'malicious': 0, 'suspicious': 1, 'undetected': 30, 'harmless': 65, 'timeout': 0}}
+                    # vtdata =vtdata[1]
+                    data = {
+                    "url": domain,
+                    "malicious": vtdata.get("malicious", 0),
+                    "suspicious": vtdata.get("suspicious", 0),
+                    "undetected": vtdata.get("undetected", 0),
+                    "harmless": vtdata.get("harmless", 0),
+                    "timeout": vtdata.get("timeout", 0),
+                    "risk": "Medium"
+                    }
+                    # cloud.vt_check_url(domain)
+                    pop_ui.url_threat_ui(data)
+                FuncB(pid, domain, "DnsQuery")
+
+        # ── FuncB: any outbound network connection (EID 3) ───────────────────
+        if ENABLE_FUNC_B and eid == 3:
+            dest = data.get("DestinationIp", "") or data.get("DestinationHostname", "")
+            if dest:
+                # FuncB(pid, dest, "NetworkConnect")
+                pass
 
     # ── Main loop ─────────────────────────────────────────────────────────────
     def run(self):
         self.reader.start()
         print("[Monitor] Running — press Ctrl+C to stop\n")
+        print(f"[Monitor] Flags → FuncA={ENABLE_FUNC_A}  FuncB={ENABLE_FUNC_B}  "
+              f"Gate1={ENABLE_GATE_1}  Gate2={ENABLE_GATE_2}\n")
 
         try:
             while self._running:
-                # Drain up to 100 events per iteration to stay responsive
                 for _ in range(100):
                     try:
                         ev = self.q.get_nowait()
@@ -208,6 +354,9 @@ class ProcessMonitor:
                     if pid in EXEMPT_PIDS or pid in self.flagged:
                         continue
 
+                    # ── Hooks (FuncA / FuncB) — run on every relevant event ──
+                    self._dispatch_hooks(ev)
+
                     # First time we see this PID → create a window
                     if self.windows[pid] is None:
                         self.windows[pid] = EventWindow(pid)
@@ -216,16 +365,15 @@ class ProcessMonitor:
                         if ev["eid"] == 1:
                             exe = ev["data"].get("Image", "")
                             if self._gate1(pid, exe):
-                                continue   # already handled
+                                continue
 
-                    # Feed event into the window
+                    # Feed event into the behavioral window
                     self.windows[pid].add(ev)
 
                     # Gate 2: score when window is ready
                     if self.windows[pid].ready():
                         self._gate2(pid, self.windows[pid])
 
-                # Small sleep to avoid busy-waiting when queue is empty
                 time.sleep(0.05)
 
         except KeyboardInterrupt:
@@ -242,7 +390,6 @@ class ProcessMonitor:
 if __name__ == "__main__":
     monitor = ProcessMonitor()
 
-    # Clean Ctrl+C handling
     def _sigint(sig, frame):
         monitor.stop()
         sys.exit(0)
