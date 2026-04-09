@@ -1,0 +1,16 @@
+{
+    "Vt_api":"e3d85a9fe98800a129b860f1ad4e3c1e55f17e2ff144f11cd0445698620d6aa8",
+    "mal_api":"3ecc340fb3c81821ab1ad11680f7a4198da1e3393698072f",
+    "gate1":false,
+    "gate2":false,
+    "WebSpam":true,
+    "RlFileScan":true, 
+    "ui_Vt":true,
+    "ui_Mal":true,
+    "ui_cus":true,
+    "ui_rl":true,
+    "ui_ember":true,
+    "LocalScan":true,
+    "RemoteAdree":true
+}
+
