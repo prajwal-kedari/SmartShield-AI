@@ -31,8 +31,8 @@ def create_shortcut():
     shortcut_path = os.path.join(desktop, "SmartShield AI.lnk")
 
     target = sys.executable  # python.exe
-    script = os.path.join(PROJECT_PATH, "main.py")
-    icon = os.path.join(PROJECT_PATH, "assets", "icon.ico")  # <-- put your icon here
+    script = os.path.join(PROJECT_PATH+"python", "main.py")
+    # icon = os.path.join(PROJECT_PATH, "assets", "icon.ico")  # <-- put your icon here
 
     shell = Dispatch('WScript.Shell')
     shortcut = shell.CreateShortCut(shortcut_path)
