@@ -17,12 +17,12 @@ def install_requirements():
     print(" Installing requirements...")
     
     subprocess.run([
-        sys.executable, "-m", "pip", "install", "-r",
+        "python", "-m", "pip", "install", "-r",
         os.path.join(PROJECT_PATH, "requirements.txt")
     ])
 
 def create_shortcut():
-    print("🖥 Creating desktop shortcut...")
+    print("Creating desktop shortcut...")
 
     import winshell
     from win32com.client import Dispatch
@@ -31,7 +31,9 @@ def create_shortcut():
     shortcut_path = os.path.join(desktop, "SmartShield AI.lnk")
 
     target = sys.executable  # python.exe
-    script = os.path.join(PROJECT_PATH+"python", "main.py")
+    print("Python executable:", target)
+    target = "python"
+    script = os.path.join(PROJECT_PATH, "main.py")
     # icon = os.path.join(PROJECT_PATH, "assets", "icon.ico")  # <-- put your icon here
 
     shell = Dispatch('WScript.Shell')
@@ -46,9 +48,9 @@ def create_shortcut():
 
 def run_project():
     print(" Launching SmartShield AI...")
-
+    print([sys.executable,  "python C:\\Project\\SmartShield-AI\\welcome.py"])
     subprocess.Popen(
-        [sys.executable, "welcome.py"],
+        ["python",  "C:\\Project\\SmartShield-AI\\welcome.py"],
         cwd=PROJECT_PATH
     )
 
