@@ -306,8 +306,9 @@ class ProcessMonitor:
         # ── FuncB: any DNS query (EID 22) ────────────────────────────────────
         if ENABLE_FUNC_B and eid == 22:
             domain = data.get("QueryName", "")
+            
             print("================>",domain)
-            if domain:
+            if domain and ( not domain.endswith((".internal",".local","in-addr.arpa"))):
                 mal ,vtdata = vt_check_url(domain)
                 print(mal,vtdata)
                 if mal:
