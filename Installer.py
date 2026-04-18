@@ -33,7 +33,7 @@ def create_shortcut():
     target = sys.executable  # python.exe
     print("Python executable:", target)
     print("Python executable:", target)
-    # target = "python"
+    target = "python"
     script = os.path.join(PROJECT_PATH, "main.py")
     icon = os.path.join(PROJECT_PATH, "Interface", "icon.ico")  
     print("Script path:", icon)
