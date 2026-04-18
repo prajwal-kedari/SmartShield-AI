@@ -9,7 +9,7 @@ process= None  # global reference
 def start_pm():
     global process
     
-    cmd = r'/k cd /d "D:\Project\Final Project\SmartShield-AI" && python -m dynamic.process_monitor'
+    cmd = r'/k cd /d "C:\Project\SmartShield-AI" && python -m dynamic.process_monitor'
     
     ctypes.windll.shell32.ShellExecuteW(
         None,
@@ -26,6 +26,6 @@ def stop_pm():
         'taskkill /F /IM cmd.exe /FI "WINDOWTITLE eq dynamic.process_monitor*"',
         shell=True
     )
-    print("🛑 Force Stopped")
+    print("Force Stopped")
 
 # start_pm()
