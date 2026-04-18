@@ -34,7 +34,7 @@ def create_shortcut():
     print("Python executable:", target)
     target = "python"
     script = os.path.join(PROJECT_PATH, "main.py")
-    # icon = os.path.join(PROJECT_PATH, "assets", "icon.ico")  # <-- put your icon here
+    icon = os.path.join(PROJECT_PATH, "Interface", "icon.ico")    # <-- put your icon here
 
     shell = Dispatch('WScript.Shell')
     shortcut = shell.CreateShortCut(shortcut_path)
@@ -42,7 +42,7 @@ def create_shortcut():
     shortcut.Targetpath = target
     shortcut.Arguments = f'"{script}"'
     shortcut.WorkingDirectory = PROJECT_PATH
-    # shortcut.IconLocation = icon
+    shortcut.IconLocation = icon
 
     shortcut.save()
 
