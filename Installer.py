@@ -32,10 +32,11 @@ def create_shortcut():
 
     target = sys.executable  # python.exe
     print("Python executable:", target)
-    target = "python"
+    print("Python executable:", target)
+    # target = "python"
     script = os.path.join(PROJECT_PATH, "main.py")
-    icon = os.path.join(PROJECT_PATH, "Interface", "icon.ico")    # <-- put your icon here
-
+    icon = os.path.join(PROJECT_PATH, "Interface", "icon.ico")  
+    print("Script path:", icon)
     shell = Dispatch('WScript.Shell')
     shortcut = shell.CreateShortCut(shortcut_path)
 
@@ -56,7 +57,7 @@ def run_project():
 
 def main():
     install_project()
-    # install_requirements()
+    install_requirements()
     create_shortcut()
     run_project()
 
