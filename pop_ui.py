@@ -1,5 +1,5 @@
 import webview
-import os
+import os ,shutil
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -7,6 +7,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 class Api:
     def __init__(self,data=None):
         self.data = data
+
+    def File_quarantine(self):
+        #Move File From Destistate to  DeskTop 
+        print("+==============>",data["filePath"])
+        dst = os.path.join(os.path.expanduser("~"), "Desktop", "Quarantine")
+        os.makedirs(dst, exist_ok=True)
+        shutil.move(data["filePath"], dst) 
+
     def Send_Data(self):
         return self.data
 
@@ -47,23 +55,23 @@ def live_behaviour_ui(data):
         js_api=api        
     )
     webview.start()
-# data = {
-#     "url": "win-prize-dddddnow.com",
-#     "malicious": 3,
-#     "suspicious": 2,
-#     "undetected": 31,
-#     "harmless": 58,
-#     "timeout": 0,
-#     "risk": "Medium"
-# }
+data = {
+    "url": "win-prize-now.com",
+    "malicious": 3,
+    "suspicious": 2,
+    "undetected": 31,
+    "harmless": 58,
+    "timeout": 0,
+    "risk": "Medium"
+}
 
-data ={
-            "time": "2026-04-09T21:01:12",
-            "pid": 1122,
-            "path": "C:\\Users\\Prajwal\\OneDrive\\Desktop\\360sb.exe",
-            "prob": 50.0,
-            "threshold":0.55
-            }
+# data ={
+#             "time": "2026-04-09T21:01:12",
+#             "pid": 1122,
+#             "path": "C:\\Users\\Prajwal\\OneDrive\\Desktop\\360sb.exe",
+#             "prob": 50.0,
+#             "threshold":0.55
+#             }
 # data ={'fileName': '123.exe', 'filePath': 'C:\\Users\\Prajwal\\OneDrive\\Desktop\\123.exe', 'vt': "false", 'vtScore': 'True/62', 'malwareDb': "false", 'family': 'None', 'custom': "false" , 'ember': "false", 'emberScore': 7.0, 'prob': '50'}
 # data ={'fileName': '360sb.exe', 'filePath': 'C:\\Users\\Prajwal\\OneDrive\\Desktop\\360sb.exe', 'vt': 'true', 'vtScore': '75/True', 'malwareDb': 0, 'family': 'None', 'custom': '1', 'ember': '1', 'emberScore': 0.6992049004297671, 'prob': '69.92'}
 # url_threat_ui(data)
