@@ -451,10 +451,11 @@
   </div>
 
   <script>
+    let FilePath = 1
     function setFileThreat(data) {
       document.getElementById('fileName').textContent = data.fileName || 'Unknown';
       document.getElementById('filePath').textContent = data.filePath || 'Unknown path';
-      
+      FilePath=data.filePath 
       // VirusTotal
       const vtBadge = document.getElementById('vtBadge');
       const vtScore = document.getElementById('vtScore');
@@ -521,9 +522,13 @@
       document.getElementById('backdrop').classList.remove('show');
       document.getElementById('popup').classList.remove('show');
     }
-
+    const data1 =null
     function quarantine() {
-      alert('File quarantined successfully!');
+
+      alert('File quarantined successfully!', FilePath);
+      // const data1 =  window.pywebview.api.Send_Data()
+      window.pywebview.api.File_quarantine()
+      // window.pywebview.api.File_quarantine(data1.filePath)
       hide();
     }
 
@@ -542,8 +547,8 @@
     // });
 
     window.addEventListener('pywebviewready', async () => {
-    const data = await window.pywebview.api.Send_Data();
-    setFileThreat(data);
+    data1 = await window.pywebview.api.Send_Data();
+    setFileThreat(data1);
     show();});
 
 
