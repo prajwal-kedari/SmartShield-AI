@@ -3,7 +3,7 @@ import json
 import webview
 import os
 from tkinter import filedialog
-from static.main import static_checker
+from static.main import static_checker, Remote_Server_EngineA
 from dynamic.Helper.sysmon.Controller_Sysmon import start_sysmon, is_sysmon_running, stop_sysmon
 from dynamic.control_Procee_Monitor import start_pm, stop_pm
 
@@ -40,7 +40,12 @@ class Api:
         self.ember = ember
         print(f"Start Scaning......\nvt:{vt},mb:{mb},cust:{cust},ember:{ember}")
     def fileScanner(self,filepath):
-        pred_value= static_checker(filepath.get("path"),self.vt,self.mb,self.cust,self.ember)
+        if data.AIEngine :
+            print("Running AI Engine for file analysis...")
+            pred_value = Remote_Server_EngineA(filepath.get("path"),self.vt,self.mb,self.cust,self.ember,data.AIEngineServerApi)
+            print("AI Engine Result:", pred_value)
+        else :
+             pred_value= static_checker(filepath.get("path"),self.vt,self.mb,self.cust,self.ember)
         print(filepath,"============================================================>",pred_value)
         if(pred_value.get("vt",[0,0])[1] or pred_value.get("mb",[0,0])[0] or pred_value.get("cust",[0,0])[0] or pred_value.get("ember",[0,0])[0]):
             return "Malicious"
@@ -63,6 +68,9 @@ class Api:
             return f"Connected to AI Engine at {ServerApi}"
         else:
             print("No AI Engine configuration provided.")
+            data["AIEngine"] = False
+            data["AIEngineServerApi"] = None
+            json.dump(data, open("SaveControl.json","w"),indent=4)
             return "No AI Engine configuration provided."
 
     def RealTimeProtection(self, enable: bool):
